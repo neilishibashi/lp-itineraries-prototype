@@ -693,10 +693,16 @@ const DRAFT_SEED = {
   status: "draft",
   author: "You",
   destination: "Harbor City",
+  description:
+    "A flexible draft you can keep shaping with your favorite stops.",
+  visibility: "Private",
+  coverImagePresent: false,
   summary: "A flexible draft you can keep shaping.",
   tags: ["Draft", "Private"],
   places: ["p-old-town-walk", "p-harbor-viewpoint"],
 };
+
+const USER_TRUST_SCORE = 22;
 
 const UI_MODES = [
   { id: "ready", label: "Ready" },
@@ -820,6 +826,18 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [draftPlaces, setDraftPlaces] = useState(DRAFT_SEED.places);
   const [draftTitle, setDraftTitle] = useState(DRAFT_SEED.title);
+  const [draftDescription, setDraftDescription] = useState(
+    DRAFT_SEED.description
+  );
+  const [draftVisibility, setDraftVisibility] = useState(
+    DRAFT_SEED.visibility
+  );
+  const [coverImagePresent, setCoverImagePresent] = useState(
+    DRAFT_SEED.coverImagePresent
+  );
+  const [draftPlaceNotes, setDraftPlaceNotes] = useState({});
+  const [draftDayNotes, setDraftDayNotes] = useState({});
+  const [publishStatus, setPublishStatus] = useState("Draft");
   const [groupDraftByDay, setGroupDraftByDay] = useState(true);
 
   useEffect(() => {
@@ -840,9 +858,12 @@ export default function App() {
     () => ({
       ...DRAFT_SEED,
       title: draftTitle,
+      description: draftDescription,
+      visibility: draftVisibility,
+      coverImagePresent,
       places: draftPlaces,
     }),
-    [draftTitle, draftPlaces]
+    [draftTitle, draftDescription, draftVisibility, coverImagePresent, draftPlaces]
   );
 
   const homeItineraries = useMemo(
@@ -921,6 +942,17 @@ export default function App() {
     setToast("Removed from your draft.");
   };
 
+  const movePlaceInDraft = (fromIndex, direction) => {
+    setDraftPlaces((prev) => {
+      const nextIndex = fromIndex + direction;
+      if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(nextIndex, 0, moved);
+      return updated;
+    });
+  };
+
   const remixItinerary = (itinerary) => {
     const placeIds = getPlaceIdsFromItinerary(itinerary);
     if (placeIds.length === 0) {
@@ -929,14 +961,20 @@ export default function App() {
     }
     setDraftPlaces(placeIds);
     setDraftTitle(`Remix of ${itinerary.title}`);
+    setDraftDescription(itinerary.summary ?? "");
+    setDraftVisibility("Private");
+    setCoverImagePresent(false);
+    setDraftPlaceNotes({});
+    setDraftDayNotes({});
+    setPublishStatus("Draft");
     setGroupDraftByDay(Boolean(itinerary?.days?.length));
-    setToast("Remix ready in your builder.");
-    navigate({ name: "builder" });
+    setToast("Remix ready in your editor.");
+    navigate({ name: "editor" });
   };
 
   const draftDayGroups = useMemo(() => {
     if (!groupDraftByDay) return [];
-    return chunkIntoDays(draftPlaces, 3);
+    return chunkIntoDays(draftPlaces, 4);
   }, [draftPlaces, groupDraftByDay]);
 
   return (
@@ -980,14 +1018,14 @@ export default function App() {
               </button>
               <button
                 type="button"
-                onClick={() => navigate({ name: "builder" })}
+                onClick={() => navigate({ name: "editor" })}
                 className={`rounded-full border px-4 py-2 text-sm transition ${
-                  route.name === "builder"
+                  route.name === "editor"
                     ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-200"
                     : "border-emerald-400/40 text-emerald-200 hover:border-emerald-300"
                 }`}
               >
-                Build draft
+                Editor
               </button>
             </div>
           </div>
@@ -1096,22 +1134,37 @@ export default function App() {
           />
         )}
 
-        {route.name === "builder" && (
-          <BuilderScreen
+        {route.name === "editor" && (
+          <EditorScreen
             draftTitle={draftTitle}
             setDraftTitle={setDraftTitle}
+            draftDescription={draftDescription}
+            setDraftDescription={setDraftDescription}
+            draftVisibility={draftVisibility}
+            setDraftVisibility={setDraftVisibility}
+            coverImagePresent={coverImagePresent}
+            setCoverImagePresent={setCoverImagePresent}
             draftPlaces={draftPlaces}
             placeMap={placeMap}
             groupDraftByDay={groupDraftByDay}
             setGroupDraftByDay={setGroupDraftByDay}
             draftDayGroups={draftDayGroups}
+            draftPlaceNotes={draftPlaceNotes}
+            setDraftPlaceNotes={setDraftPlaceNotes}
+            draftDayNotes={draftDayNotes}
+            setDraftDayNotes={setDraftDayNotes}
+            publishStatus={publishStatus}
+            setPublishStatus={setPublishStatus}
+            userTrustScore={USER_TRUST_SCORE}
+            onMovePlace={movePlaceInDraft}
             onOpenPlace={(id) => navigate({ name: "place", placeId: id })}
             onRemoveFromDraft={removePlaceFromDraft}
-            onAddMore={() => navigate({ name: "home" })}
+            onAddPlace={addPlaceToDraft}
+            onBrowsePlaces={() => navigate({ name: "home" })}
             onPreviewDraft={() =>
               navigate({ name: "itinerary", itineraryId: DRAFT_SEED.id })
             }
-            onSaveDraft={() => setToast("Draft saved locally.")}
+            onToast={setToast}
           />
         )}
       </div>
@@ -2131,34 +2184,158 @@ function PlaceScreen({
   );
 }
 
-function BuilderScreen({
+function EditorScreen({
   draftTitle,
   setDraftTitle,
+  draftDescription,
+  setDraftDescription,
+  draftVisibility,
+  setDraftVisibility,
+  coverImagePresent,
+  setCoverImagePresent,
   draftPlaces,
   placeMap,
   groupDraftByDay,
   setGroupDraftByDay,
   draftDayGroups,
+  draftPlaceNotes,
+  setDraftPlaceNotes,
+  draftDayNotes,
+  setDraftDayNotes,
+  publishStatus,
+  setPublishStatus,
+  userTrustScore,
+  onMovePlace,
   onOpenPlace,
   onRemoveFromDraft,
-  onAddMore,
+  onAddPlace,
+  onBrowsePlaces,
   onPreviewDraft,
-  onSaveDraft,
+  onToast,
 }) {
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishErrors, setPublishErrors] = useState([]);
+
+  const placeIndexMap = useMemo(() => {
+    const map = {};
+    draftPlaces.forEach((placeId, index) => {
+      map[placeId] = index;
+    });
+    return map;
+  }, [draftPlaces]);
+
+  const filteredPlaces = useMemo(() => {
+    if (!placeQuery.trim()) return [];
+    const normalized = placeQuery.toLowerCase();
+    return PLACE_CATALOG.filter((place) =>
+      place.name.toLowerCase().includes(normalized)
+    ).slice(0, 6);
+  }, [placeQuery]);
+
+  const categoriesUsed = useMemo(() => {
+    const categories = new Set();
+    draftPlaces.forEach((placeId) => {
+      const type = placeMap[placeId]?.type;
+      if (type) categories.add(type);
+    });
+    return categories;
+  }, [draftPlaces, placeMap]);
+
+  const dayCount = groupDraftByDay ? draftDayGroups.length : 1;
+  const hasEnoughPlacesOrDays =
+    draftPlaces.length >= 6 || dayCount >= 2;
+  const descriptionLength = draftDescription.trim().length;
+  const checklist = [
+    {
+      label: "Cover image present",
+      complete: coverImagePresent,
+    },
+    {
+      label: "Description is at least 40 characters",
+      complete: descriptionLength >= 40,
+    },
+    {
+      label: "At least 6 places total or 2+ days",
+      complete: hasEnoughPlacesOrDays,
+    },
+    {
+      label: "Includes at least 2 categories",
+      complete: categoriesUsed.size >= 2,
+    },
+  ];
+
+  const handlePlaceNoteChange = (placeId, value) =>
+    setDraftPlaceNotes((prev) => ({
+      ...prev,
+      [placeId]: value,
+    }));
+
+  const handleDayNoteChange = (dayIndex, value) =>
+    setDraftDayNotes((prev) => ({
+      ...prev,
+      [dayIndex]: value,
+    }));
+
+  const handlePublish = () => {
+    const errors = [];
+    if (!coverImagePresent) {
+      errors.push(
+        "Add a cover image so travelers can spot your itinerary quickly."
+      );
+    }
+    if (descriptionLength < 40) {
+      errors.push(
+        "Add a bit more detail — a longer description helps set expectations."
+      );
+    }
+    if (!hasEnoughPlacesOrDays) {
+      errors.push(
+        "Add a few more places or split into at least two days for balance."
+      );
+    }
+    if (categoriesUsed.size < 2) {
+      errors.push(
+        "Mix in at least two categories (food + activity, for example)."
+      );
+    }
+
+    if (errors.length > 0) {
+      setPublishErrors(errors);
+      return;
+    }
+
+    setPublishErrors([]);
+    setDraftVisibility("Public");
+    const status =
+      userTrustScore < 30
+        ? "Community — Needs review"
+        : "Community — Published";
+    setPublishStatus(status);
+    setShowPublishModal(false);
+    if (onToast) {
+      onToast(
+        userTrustScore < 30
+          ? "Published and queued for review."
+          : "Published to the community."
+      );
+    }
+  };
+
   return (
     <div className="mt-8 space-y-6">
       <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-semibold">Build a community itinerary</h2>
+            <h2 className="text-2xl font-semibold">Itinerary editor</h2>
             <p className="mt-2 text-sm text-slate-400">
-              This is your private draft. Nothing is published until you share.
+              Rename, reorder, and publish your community itinerary.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={onSaveDraft}
+              onClick={() => onToast && onToast("Draft saved locally.")}
               className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
             >
               Save draft
@@ -2170,88 +2347,234 @@ function BuilderScreen({
             >
               Preview itinerary
             </button>
+            <button
+              type="button"
+              onClick={() => setShowPublishModal(true)}
+              className="rounded-full border border-indigo-400/40 px-4 py-2 text-sm text-indigo-200 hover:border-indigo-300"
+            >
+              Publish
+            </button>
           </div>
         </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span className="rounded-full border border-slate-700 px-3 py-1">
+            Visibility: {draftVisibility}
+          </span>
+          <span className="rounded-full border border-slate-700 px-3 py-1">
+            Status: {publishStatus}
+          </span>
+          <span className="rounded-full border border-slate-700 px-3 py-1">
+            Trust score: {userTrustScore}
+          </span>
+        </div>
+      </section>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-[2fr_1fr]">
-          <label className="space-y-2 text-sm text-slate-400">
-            Draft title
-            <input
-              value={draftTitle}
-              onChange={(event) => setDraftTitle(event.target.value)}
-              className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-base text-slate-100 outline-none focus:border-slate-500"
-            />
-          </label>
-          <div className="rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm text-slate-300">
+      <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <label className="space-y-2 text-sm text-slate-400">
+              Itinerary title
+              <input
+                value={draftTitle}
+                onChange={(event) => setDraftTitle(event.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-base text-slate-100 outline-none focus:border-slate-500"
+              />
+            </label>
+            <label className="mt-4 block space-y-2 text-sm text-slate-400">
+              Description
+              <textarea
+                value={draftDescription}
+                onChange={(event) => setDraftDescription(event.target.value)}
+                rows={4}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-base text-slate-100 outline-none focus:border-slate-500"
+              />
+            </label>
+            <p className="mt-2 text-xs text-slate-500">
+              {descriptionLength}/40 characters
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-              Draft status
+              Visibility
             </p>
-            <p className="mt-2">
-              Private. You can share when it feels ready.
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["Private", "Public"].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setDraftVisibility(option)}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${
+                    draftVisibility === option
+                      ? "border-slate-500 bg-slate-800 text-white"
+                      : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Public itineraries appear in the Community feed after review.
             </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Cover image
+            </p>
+            <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-4">
+              <div className="text-sm text-slate-400">
+                {coverImagePresent
+                  ? "Cover image attached."
+                  : "No cover image yet."}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCoverImagePresent((prev) => !prev)}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+              >
+                {coverImagePresent ? "Remove cover" : "Add cover"}
+              </button>
+            </div>
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center gap-3 text-xs text-slate-400">
-          <button
-            type="button"
-            onClick={() => setGroupDraftByDay((prev) => !prev)}
-            className={`rounded-full border px-3 py-1 ${
-              groupDraftByDay
-                ? "border-amber-400/50 bg-amber-500/10 text-amber-100"
-                : "border-slate-700 text-slate-300"
-            }`}
-          >
-            {groupDraftByDay ? "Grouped into days" : "Single ordered list"}
-          </button>
-          <span>Drag to reorder is a placeholder.</span>
-        </div>
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Add a place
+            </p>
+            <div className="relative mt-3">
+              <input
+                value={placeQuery}
+                onChange={(event) => setPlaceQuery(event.target.value)}
+                placeholder="Search places"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+              />
+              {placeQuery && (
+                <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-lg">
+                  {filteredPlaces.length === 0 && (
+                    <div className="px-4 py-3 text-xs text-slate-500">
+                      No matching places yet.
+                    </div>
+                  )}
+                  {filteredPlaces.map((place) => (
+                    <button
+                      key={place.id}
+                      type="button"
+                      onClick={() => {
+                        onAddPlace(place.id);
+                        setPlaceQuery("");
+                      }}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-slate-200 hover:bg-slate-900"
+                    >
+                      <span>{place.name}</span>
+                      <span className="text-xs text-slate-500">
+                        {PLACE_TYPES[place.type]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onBrowsePlaces}
+              className="mt-3 w-full rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+            >
+              Browse all places
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Day grouping
+            </p>
+            <div className="mt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => setGroupDraftByDay(true)}
+                className="w-full rounded-full border border-amber-400/50 px-4 py-2 text-xs text-amber-100 hover:border-amber-300"
+              >
+                Auto-split into days (4 places/day)
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupDraftByDay(false)}
+                className="w-full rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+              >
+                Switch to single list
+              </button>
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Reordering works in either view.
+            </p>
+          </div>
+        </aside>
       </section>
 
       {draftPlaces.length === 0 ? (
         <EmptyState
-          title="Your draft is empty"
-          description="Add places from the Explore tab to start building."
+          title="Your itinerary is empty"
+          description="Add places to start building your day-by-day flow."
           actionLabel="Browse places"
-          onAction={onAddMore}
+          onAction={onBrowsePlaces}
         />
       ) : (
         <section className="space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h3 className="text-lg font-semibold">Draft places</h3>
-            <button
-              type="button"
-              onClick={onAddMore}
-              className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
-            >
-              Add more places
-            </button>
+            <h3 className="text-lg font-semibold">Places and notes</h3>
+            <p className="text-xs text-slate-500">
+              Use arrows to reorder. Add notes to guide travelers.
+            </p>
           </div>
 
           {groupDraftByDay ? (
             <div className="space-y-4">
-              {draftDayGroups.map((day) => (
+              {draftDayGroups.map((day, dayIndex) => (
                 <div
-                  key={day.day}
+                  key={day.day ?? `day-${dayIndex + 1}`}
                   className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
                 >
                   <div className="flex items-center justify-between">
-                    <h4 className="text-lg font-semibold">{day.day}</h4>
+                    <h4 className="text-lg font-semibold">
+                      {day.day ?? `Day ${dayIndex + 1}`}
+                    </h4>
                     <span className="text-xs text-slate-500">
                       {day.places.length} places
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-500">{day.summary}</p>
+                  <textarea
+                    value={draftDayNotes[dayIndex] ?? ""}
+                    onChange={(event) =>
+                      handleDayNoteChange(dayIndex, event.target.value)
+                    }
+                    rows={2}
+                    placeholder="Add day notes (pace, timing, tickets)"
+                    className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                  />
                   <div className="mt-4 space-y-3">
-                    {day.places.map((placeId, index) => (
-                      <DraftRow
-                        key={`${day.day}-${placeId}`}
-                        place={placeMap[placeId]}
-                        index={index + 1}
-                        onOpen={() => onOpenPlace(placeId)}
-                        onRemove={() => onRemoveFromDraft(placeId)}
-                      />
-                    ))}
+                    {day.places.map((placeId) => {
+                      const place = placeMap[placeId];
+                      const index = placeIndexMap[placeId];
+                      return (
+                        <EditorPlaceRow
+                          key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
+                          place={place}
+                          index={index}
+                          totalCount={draftPlaces.length}
+                          note={draftPlaceNotes[placeId] ?? ""}
+                          onMoveUp={() => onMovePlace(index, -1)}
+                          onMoveDown={() => onMovePlace(index, 1)}
+                          onRemove={() => onRemoveFromDraft(placeId)}
+                          onNoteChange={(value) =>
+                            handlePlaceNoteChange(placeId, value)
+                          }
+                          onOpen={() => onOpenPlace(placeId)}
+                        />
+                      );
+                    })}
                   </div>
                 </div>
               ))}
@@ -2260,18 +2583,89 @@ function BuilderScreen({
             <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
               <div className="space-y-3">
                 {draftPlaces.map((placeId, index) => (
-                  <DraftRow
+                  <EditorPlaceRow
                     key={`draft-${placeId}`}
                     place={placeMap[placeId]}
-                    index={index + 1}
-                    onOpen={() => onOpenPlace(placeId)}
+                    index={index}
+                    totalCount={draftPlaces.length}
+                    note={draftPlaceNotes[placeId] ?? ""}
+                    onMoveUp={() => onMovePlace(index, -1)}
+                    onMoveDown={() => onMovePlace(index, 1)}
                     onRemove={() => onRemoveFromDraft(placeId)}
+                    onNoteChange={(value) =>
+                      handlePlaceNoteChange(placeId, value)
+                    }
+                    onOpen={() => onOpenPlace(placeId)}
                   />
                 ))}
               </div>
             </div>
           )}
         </section>
+      )}
+
+      {showPublishModal && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 px-6">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-semibold">Ready to publish?</h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  Complete the checklist to share your itinerary.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPublishModal(false)}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {checklist.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-200"
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={`text-xs ${
+                      item.complete ? "text-emerald-300" : "text-rose-300"
+                    }`}
+                  >
+                    {item.complete ? "Ready" : "Needs work"}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {publishErrors.length > 0 && (
+              <div className="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-100">
+                <p className="font-semibold">Before you publish</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {publishErrors.map((error) => (
+                    <li key={error}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                New creators may be reviewed before going live.
+              </p>
+              <button
+                type="button"
+                onClick={handlePublish}
+                className="rounded-full border border-indigo-400/40 px-4 py-2 text-sm text-indigo-200 hover:border-indigo-300"
+              >
+                Publish now
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -2436,6 +2830,79 @@ function DraftRow({ place, index, onOpen, onRemove }) {
       >
         Remove
       </button>
+    </div>
+  );
+}
+
+function EditorPlaceRow({
+  place,
+  index,
+  totalCount,
+  note,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+  onNoteChange,
+  onOpen,
+}) {
+  if (!place) return null;
+  const canMoveUp = index > 0;
+  const canMoveDown = index < totalCount - 1;
+
+  return (
+    <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-200">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="mt-1 text-slate-500">≡</div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 text-xs text-slate-400">
+            {index + 1}
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={onOpen}
+              className="text-left text-sm font-semibold text-slate-100 hover:underline"
+            >
+              {place.name}
+            </button>
+            <div className="text-xs text-slate-500">
+              {PLACE_TYPES[place.type]} • {place.duration}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+            className="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Up
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+            className="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Down
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="rounded-full border border-rose-400/40 px-3 py-1 text-rose-200 hover:border-rose-300"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+      <textarea
+        value={note}
+        onChange={(event) => onNoteChange(event.target.value)}
+        rows={2}
+        placeholder="Add a note for this stop"
+        className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-xs text-slate-100 outline-none focus:border-slate-500"
+      />
     </div>
   );
 }
