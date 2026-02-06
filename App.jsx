@@ -7,6 +7,13 @@ const PLACE_TYPES = {
   activity: "Activity",
 };
 
+const PLACE_ICONS = {
+  attraction: "A",
+  food: "F",
+  neighborhood: "N",
+  activity: "ACT",
+};
+
 const PLACE_CATALOG = [
   {
     id: "p-old-town-walk",
@@ -207,6 +214,11 @@ const CURATED_ITINERARIES = [
     title: "Harbor Highlights in 2 Days",
     type: "curated",
     author: "Lonely Planet editors",
+    destination: "Harbor City",
+    daysCount: 2,
+    editor: "Alina Ross",
+    credibilityLine:
+      "Field-tested across two seasons with transit and walking updates.",
     summary: "A balanced mix of views, food, and easy walking.",
     tags: ["Classic", "First timer", "Balanced pace"],
     days: [
@@ -234,6 +246,11 @@ const CURATED_ITINERARIES = [
     title: "Active City Weekend",
     type: "curated",
     author: "Lonely Planet editors",
+    destination: "Harbor City",
+    daysCount: 2,
+    editor: "Marcus Lee",
+    credibilityLine:
+      "Updated quarterly with sunrise timings and activity operators.",
     summary: "For travelers who like motion in the morning.",
     tags: ["Active", "Outdoors", "Morning energy"],
     days: [
@@ -259,6 +276,9 @@ const COMMUNITY_ITINERARIES = [
     title: "Late Night Bites and Neon",
     type: "community",
     author: "Maya C.",
+    destination: "Harbor City",
+    daysCount: 1,
+    trustScore: 4.6,
     summary: "A flexible crawl built for hungry night owls.",
     tags: ["Night owl", "Budget", "Loose plan"],
     likes: 348,
@@ -276,6 +296,10 @@ const COMMUNITY_ITINERARIES = [
     title: "Neighborhood Storytelling Loop",
     type: "community",
     author: "Ravi S.",
+    destination: "Harbor City",
+    daysCount: 2,
+    trustScore: 4.8,
+    remixOf: "Harbor Highlights in 2 Days",
     summary: "Slow pacing with time for photos and stories.",
     tags: ["Photo", "History", "Slow pace"],
     likes: 212,
@@ -329,6 +353,9 @@ const DISCOVER_CURATED = [
     vibes: ["slow mornings", "photo walks", "low stress"],
     type: "curated",
     author: "Lonely Planet",
+    editor: "Alina Ross",
+    credibilityLine:
+      "Built from editor field notes and updated harbor transit tips.",
     saves: 1860,
     length: "short",
     budget: "mid",
@@ -359,6 +386,9 @@ const DISCOVER_CURATED = [
     vibes: ["food-forward", "easy walks", "local tastes"],
     type: "curated",
     author: "Lonely Planet",
+    editor: "Samira Kline",
+    credibilityLine:
+      "Curated with local chefs and verified opening hours.",
     saves: 2410,
     length: "medium",
     budget: "mid",
@@ -394,6 +424,9 @@ const DISCOVER_CURATED = [
     vibes: ["early starts", "outdoors", "reset energy"],
     type: "curated",
     author: "Lonely Planet",
+    editor: "Marcus Lee",
+    credibilityLine:
+      "Activity windows checked weekly for weather and tide shifts.",
     saves: 1320,
     length: "short",
     budget: "splurge",
@@ -427,6 +460,7 @@ const DISCOVER_COMMUNITY = [
     vibes: ["late nights", "street food", "loose plan"],
     type: "community",
     author: "Kai M.",
+    trustScore: 4.5,
     saves: 980,
     length: "short",
     budget: "budget",
@@ -446,6 +480,7 @@ const DISCOVER_COMMUNITY = [
     vibes: ["creative", "cafe breaks", "slow chats"],
     type: "community",
     author: "Lena J.",
+    trustScore: 4.8,
     saves: 1120,
     length: "short",
     budget: "mid",
@@ -476,6 +511,7 @@ const DISCOVER_COMMUNITY = [
     vibes: ["kid-friendly", "short stops", "easy snacks"],
     type: "community",
     author: "Priya R.",
+    trustScore: 4.4,
     saves: 860,
     length: "short",
     budget: "budget",
@@ -506,6 +542,8 @@ const DISCOVER_COMMUNITY = [
     vibes: ["indoor calm", "slow pace", "warm drinks"],
     type: "community",
     author: "Miles T.",
+    trustScore: 4.3,
+    remixOf: "Art Studios + Coffee Breaks",
     saves: 640,
     length: "short",
     budget: "mid",
@@ -525,6 +563,8 @@ const DISCOVER_COMMUNITY = [
     vibes: ["flexible", "first timer", "choose your own"],
     type: "community",
     author: "Sasha W.",
+    trustScore: 4.9,
+    remixOf: "Food-Forward First Timer",
     saves: 1510,
     length: "medium",
     budget: "mid",
@@ -562,6 +602,7 @@ const DRAFT_SEED = {
   type: "community",
   status: "draft",
   author: "You",
+  destination: "Harbor City",
   summary: "A flexible draft you can keep shaping.",
   tags: ["Draft", "Private"],
   places: ["p-old-town-walk", "p-harbor-viewpoint"],
@@ -619,6 +660,27 @@ const formatSaves = (count) => {
   }
   return `${count}`;
 };
+
+const getInitials = (name) => {
+  if (!name) return "LP";
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
+
+const TIME_BLOCKS = [
+  "8:00 AM",
+  "10:30 AM",
+  "1:00 PM",
+  "3:30 PM",
+  "6:30 PM",
+  "8:30 PM",
+];
+
+const getTimeBlock = (index) => TIME_BLOCKS[index % TIME_BLOCKS.length];
 
 const matchesDiscoverFilters = (itinerary, filters, searchTerm) => {
   const normalized = searchTerm.trim().toLowerCase();
@@ -769,20 +831,17 @@ export default function App() {
     setToast("Removed from your draft.");
   };
 
-  const copyItineraryToDraft = (itinerary) => {
+  const remixItinerary = (itinerary) => {
     const placeIds = getPlaceIdsFromItinerary(itinerary);
     if (placeIds.length === 0) {
-      setToast("No places to copy yet.");
+      setToast("No places to remix yet.");
       return;
     }
-    setDraftPlaces((prev) => {
-      const merged = [...prev];
-      placeIds.forEach((id) => {
-        if (!merged.includes(id)) merged.push(id);
-      });
-      return merged;
-    });
-    setToast("Copied places into your draft.");
+    setDraftPlaces(placeIds);
+    setDraftTitle(`Remix of ${itinerary.title}`);
+    setGroupDraftByDay(Boolean(itinerary?.days?.length));
+    setToast("Remix ready in your builder.");
+    navigate({ name: "builder" });
   };
 
   const draftDayGroups = useMemo(() => {
@@ -929,9 +988,9 @@ export default function App() {
                 itineraryId: route.itineraryId,
               })
             }
-            onCopyToDraft={copyItineraryToDraft}
-            onAddToDraft={addPlaceToDraft}
             onGoHome={goHome}
+            onRemix={remixItinerary}
+            onToast={setToast}
           />
         )}
 
@@ -1520,10 +1579,12 @@ function ItineraryScreen({
   itinerary,
   placeMap,
   onOpenPlace,
-  onCopyToDraft,
-  onAddToDraft,
   onGoHome,
+  onRemix,
+  onToast,
 }) {
+  const [saved, setSaved] = useState(false);
+
   if (uiMode === "loading") {
     return (
       <div className="mt-8">
@@ -1557,18 +1618,45 @@ function ItineraryScreen({
   }
 
   const placeIds = getPlaceIdsFromItinerary(itinerary);
-  const hasDays = itinerary?.days?.length > 0;
   const isCurated = itinerary.type === "curated";
   const isDraft = itinerary.status === "draft";
+  const dayGroups = itinerary?.days?.length
+    ? itinerary.days
+    : chunkIntoDays(placeIds, 3);
+  const daysCount =
+    itinerary?.days?.length ?? itinerary?.daysCount ?? dayGroups.length;
+  const destination = itinerary.destination ?? "Harbor City";
+  const daysLabel = `${daysCount} day${daysCount === 1 ? "" : "s"}`;
+  const editor = itinerary.editor ?? "LP Editorial Team";
+  const credibilityLine =
+    itinerary.credibilityLine ?? "Field-tested by Lonely Planet editors.";
+  const trustScore = itinerary.trustScore ?? 4.7;
+  const authorName = itinerary.author ?? (isCurated ? "Lonely Planet" : "Community");
+
+  const handleSave = () => {
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+    if (onToast) {
+      onToast(nextSaved ? "Saved to your list." : "Removed from saved.");
+    }
+  };
+
+  const handleDownload = () => {
+    if (onToast) onToast("Offline pack queued.");
+  };
+
+  const handleShare = () => {
+    if (onToast) onToast("Share link copied.");
+  };
 
   if (uiMode === "empty" || placeIds.length === 0) {
     return (
       <div className="mt-8">
         <EmptyState
           title="No places yet"
-          description="This itinerary is waiting for places. Add some or copy from another list."
-          actionLabel="Add to draft"
-          onAction={() => onCopyToDraft(itinerary)}
+          description="This itinerary is waiting for places. Try another route or remix it."
+          actionLabel="Remix this itinerary"
+          onAction={() => onRemix(itinerary)}
         />
       </div>
     );
@@ -1576,151 +1664,171 @@ function ItineraryScreen({
 
   return (
     <div className="mt-8 space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
-                {isDraft
-                  ? "Community draft"
-                  : isCurated
-                  ? "Lonely Planet curated"
-                  : "Community itinerary"}
-              </Badge>
-              <Badge tone="subtle">{placeIds.length} places</Badge>
-            </div>
-            <div>
-              <h2 className="text-2xl font-semibold">{itinerary.title}</h2>
-              <p className="mt-2 text-sm text-slate-400">{itinerary.summary}</p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {(itinerary.tags ?? []).map((tag) => (
-                <Badge key={tag} tone="subtle">
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-            {itinerary.expertNotes && (
-              <div className="rounded-xl border border-slate-700 bg-slate-950/70 p-4 text-sm text-slate-300">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                  Expert notes
-                </p>
-                <p className="mt-2">{itinerary.expertNotes}</p>
-              </div>
-            )}
-            {itinerary.notes && (
-              <div className="rounded-xl border border-slate-700 bg-slate-950/70 p-4 text-sm text-slate-300">
-                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                  Community notes
-                </p>
-                <p className="mt-2">{itinerary.notes}</p>
-              </div>
-            )}
+      <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40">
+        <div className="relative h-40 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.25),_transparent_55%)]" />
+          <div className="absolute inset-0 flex items-center justify-between px-6 text-xs text-slate-400">
+            <span>Hero image preview</span>
+            <span>Prototype only</span>
           </div>
-          <div className="flex flex-col gap-3">
-            <button
-              type="button"
-              onClick={() => onCopyToDraft(itinerary)}
-              className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
-            >
-              Copy into my draft
-            </button>
-            <button
-              type="button"
-              onClick={() => onAddToDraft(placeIds[0])}
-              className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
-            >
-              Add first place
-            </button>
-            <div className="text-xs text-slate-500">
-              Copy keeps the order. You can tweak later.
-            </div>
+        </div>
+        <div className="space-y-4 p-6">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
+              {isDraft
+                ? "Community draft"
+                : isCurated
+                ? "Lonely Planet curated"
+                : "Community itinerary"}
+            </Badge>
+            <Badge tone="subtle">{destination}</Badge>
+            <Badge tone="subtle">{daysLabel}</Badge>
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold">{itinerary.title}</h2>
+            <p className="mt-2 text-sm text-slate-400">{itinerary.summary}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(itinerary.tags ?? itinerary.vibes ?? []).map((tag) => (
+              <Badge key={tag} tone="subtle">
+                {tag}
+              </Badge>
+            ))}
           </div>
         </div>
       </section>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <section className="space-y-6">
-          {hasDays ? (
-            itinerary.days.map((day) => (
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            {isCurated ? (
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  Curated by Lonely Planet
+                </p>
+                <div className="text-lg font-semibold text-slate-100">
+                  {editor}
+                </div>
+                <p className="text-sm text-slate-400">{credibilityLine}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-sm font-semibold text-slate-200">
+                    {getInitials(authorName)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-100">
+                      {authorName}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Trust score {trustScore}/5
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400">
+                  {itinerary.remixOf
+                    ? `Remix of ${itinerary.remixOf}`
+                    : "Original community route"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="space-y-4">
+            {dayGroups.map((day, dayIndex) => (
               <div
-                key={day.day}
+                key={day.day ?? `day-${dayIndex + 1}`}
                 className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-lg font-semibold">{day.day}</h3>
+                  <h3 className="text-lg font-semibold">
+                    {day.day ?? `Day ${dayIndex + 1}`}
+                  </h3>
                   <span className="text-xs text-slate-500">
                     {day.places.length} places
                   </span>
                 </div>
-                <p className="mt-2 text-sm text-slate-400">{day.summary}</p>
-                <div className="mt-4 space-y-3">
+                <p className="mt-2 text-sm text-slate-400">
+                  {day.summary ?? "Balanced pacing with room to wander."}
+                </p>
+                <div className="mt-4 space-y-4">
                   {day.places.map((placeId, index) => (
-                    <PlaceRow
-                      key={`${day.day}-${placeId}`}
+                    <TimelinePlaceCard
+                      key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
                       place={placeMap[placeId]}
-                      index={index + 1}
+                      order={index + 1}
+                      timeBlock={getTimeBlock(index)}
                       onOpen={() => onOpenPlace(placeId)}
                     />
                   ))}
                 </div>
               </div>
-            ))
-          ) : (
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <h3 className="text-lg font-semibold">Ordered list</h3>
-                <span className="text-xs text-slate-500">
-                  No day grouping
-                </span>
-              </div>
-              <p className="mt-2 text-sm text-slate-400">
-                A single list for maximum flexibility. Group into days later if
-                you want.
-              </p>
-              <div className="mt-4 space-y-3">
-                {placeIds.map((placeId, index) => (
-                  <PlaceRow
-                    key={`place-${placeId}`}
-                    place={placeMap[placeId]}
-                    index={index + 1}
-                    onOpen={() => onOpenPlace(placeId)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
+            ))}
+          </div>
         </section>
 
         <aside className="space-y-4">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-              Map preview
+              Actions
             </p>
-            <div className="mt-4 h-40 rounded-xl border border-dashed border-slate-700 bg-slate-950/60" />
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="w-full rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
+              >
+                {saved ? "Saved" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="w-full rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+              >
+                Download offline
+              </button>
+              <button
+                type="button"
+                onClick={() => onRemix(itinerary)}
+                className="w-full rounded-full border border-indigo-400/40 px-4 py-2 text-sm text-indigo-200 hover:border-indigo-300"
+              >
+                Remix this itinerary
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="w-full rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+              >
+                Share
+              </button>
+            </div>
             <p className="mt-3 text-xs text-slate-500">
-              Map is a placeholder for the prototype.
+              Actions are mocked for prototype validation.
             </p>
           </div>
+
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-              Quick actions
+              Map preview
             </p>
-            <div className="mt-3 space-y-2">
-              <ActionRow
-                title="Add a place"
-                description="Jump to a place and add it to your draft."
-              />
-              <ActionRow
-                title="Reorder later"
-                description="Drag and drop is mocked for now."
-              />
-              <ActionRow
-                title="Share a link"
-                description="Sharing is disabled in prototype mode."
-              />
+            <div className="mt-4 h-40 rounded-xl border border-dashed border-slate-700 bg-slate-950/60">
+              <div className="flex h-full items-center justify-center text-xs text-slate-500">
+                Map pins follow the itinerary order.
+              </div>
+            </div>
+            <div className="mt-4 space-y-2 text-xs text-slate-400">
+              {placeIds.map((placeId, index) => (
+                <div key={`map-${placeId}`} className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-700 text-[10px] text-slate-400">
+                    {index + 1}
+                  </span>
+                  <span>{placeMap[placeId]?.name ?? "Place"}</span>
+                </div>
+              ))}
             </div>
           </div>
+
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
               Notes
@@ -2148,6 +2256,46 @@ function PlaceRow({ place, index, onOpen }) {
       </div>
       <span className="text-xs text-slate-500">{place.neighborhood}</span>
     </button>
+  );
+}
+
+function TimelinePlaceCard({ place, order, timeBlock, onOpen }) {
+  if (!place) return null;
+  const description = place.headline ?? place.description ?? "";
+  return (
+    <div className="flex flex-wrap gap-4">
+      <div className="min-w-[90px] text-xs text-slate-400">
+        <div className="text-sm font-semibold text-slate-200">{timeBlock}</div>
+        <div className="mt-1 text-slate-500">{place.duration}</div>
+      </div>
+      <div className="flex-1 rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 text-[10px] font-semibold text-slate-300">
+                {PLACE_ICONS[place.type] ?? "P"}
+              </span>
+              <span>{PLACE_TYPES[place.type]}</span>
+              <span className="text-slate-600">•</span>
+              <span>Stop {order}</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-100">
+                {place.name}
+              </div>
+              <p className="mt-1 text-xs text-slate-400">{description}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpen}
+            className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+          >
+            View
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 
