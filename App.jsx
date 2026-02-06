@@ -19,6 +19,7 @@ const PLACE_CATALOG = [
     id: "p-old-town-walk",
     name: "Old Town Morning Walk",
     type: "neighborhood",
+    source: "lp",
     neighborhood: "Old Quarter",
     duration: "1.5 hr",
     price: "Free",
@@ -48,6 +49,7 @@ const PLACE_CATALOG = [
     id: "p-harbor-viewpoint",
     name: "Harbor Viewpoint",
     type: "attraction",
+    source: "lp",
     neighborhood: "South Pier",
     duration: "45 min",
     price: "$",
@@ -76,6 +78,7 @@ const PLACE_CATALOG = [
     id: "p-ferry-loop",
     name: "Ferry Loop Ride",
     type: "activity",
+    source: "community",
     neighborhood: "Waterfront",
     duration: "2 hr",
     price: "$$",
@@ -104,6 +107,7 @@ const PLACE_CATALOG = [
     id: "p-market-hall",
     name: "Market Hall Lunch",
     type: "food",
+    source: "lp",
     neighborhood: "Central Market",
     duration: "1 hr",
     price: "$$",
@@ -132,6 +136,7 @@ const PLACE_CATALOG = [
     id: "p-night-market",
     name: "Night Market Crawl",
     type: "food",
+    source: "community",
     neighborhood: "Lantern Row",
     duration: "2.5 hr",
     price: "$",
@@ -160,6 +165,7 @@ const PLACE_CATALOG = [
     id: "p-art-street",
     name: "Art Street Galleries",
     type: "neighborhood",
+    source: "community",
     neighborhood: "Warehouse District",
     duration: "2 hr",
     price: "Free",
@@ -188,6 +194,7 @@ const PLACE_CATALOG = [
     id: "p-museum-dock",
     name: "Maritime Museum Dock",
     type: "attraction",
+    source: "lp",
     neighborhood: "North Wharf",
     duration: "1.5 hr",
     price: "$$",
@@ -216,6 +223,7 @@ const PLACE_CATALOG = [
     id: "p-river-kayak",
     name: "River Kayak Loop",
     type: "activity",
+    source: "community",
     neighborhood: "East Bank",
     duration: "2 hr",
     price: "$$",
@@ -244,6 +252,7 @@ const PLACE_CATALOG = [
     id: "p-hill-temple",
     name: "Hill Temple Sunrise",
     type: "attraction",
+    source: "lp",
     neighborhood: "Hilltop",
     duration: "1 hr",
     price: "$",
@@ -272,6 +281,7 @@ const PLACE_CATALOG = [
     id: "p-coffee-roastery",
     name: "Roastery Tasting Bar",
     type: "food",
+    source: "community",
     neighborhood: "Riverside",
     duration: "45 min",
     price: "$$",
@@ -303,6 +313,7 @@ const CURATED_ITINERARIES = [
     id: "lp-harbor-days",
     title: "Harbor Highlights in 2 Days",
     type: "curated",
+    pinned: true,
     author: "Lonely Planet editors",
     destination: "Harbor City",
     daysCount: 2,
@@ -330,11 +341,34 @@ const CURATED_ITINERARIES = [
     ],
     expertNotes:
       "Start late if you arrive the night before. The order keeps walking distances short.",
+    remixes: [
+      {
+        id: "remix-harbor-slow",
+        title: "Harbor Slow Stroll",
+        author: "Tara M.",
+        trustScore: 4.6,
+        tripCount: 12,
+        saves: 410,
+        completedCount: 55,
+        diffSummary: "+2 places, swapped Day 2",
+      },
+      {
+        id: "remix-harbor-foodie",
+        title: "Harbor Bites Remix",
+        author: "Jin P.",
+        trustScore: 4.4,
+        tripCount: 9,
+        saves: 260,
+        completedCount: 31,
+        diffSummary: "+3 places, added night market",
+      },
+    ],
   },
   {
     id: "lp-active-weekend",
     title: "Active City Weekend",
     type: "curated",
+    pinned: true,
     author: "Lonely Planet editors",
     destination: "Harbor City",
     daysCount: 2,
@@ -357,6 +391,28 @@ const CURATED_ITINERARIES = [
     ],
     expertNotes:
       "Swap the morning order if you need a later start. All stops still connect.",
+    remixes: [
+      {
+        id: "remix-active-soft",
+        title: "Active with Slow Mornings",
+        author: "Nia L.",
+        trustScore: 4.7,
+        tripCount: 14,
+        saves: 380,
+        completedCount: 42,
+        diffSummary: "-1 place, swapped Day 1 order",
+      },
+      {
+        id: "remix-active-family",
+        title: "Active Weekend (Family)",
+        author: "Priya R.",
+        trustScore: 4.5,
+        tripCount: 11,
+        saves: 290,
+        completedCount: 36,
+        diffSummary: "+2 places, shorter Day 2",
+      },
+    ],
   },
 ];
 
@@ -369,6 +425,9 @@ const COMMUNITY_ITINERARIES = [
     destination: "Harbor City",
     daysCount: 1,
     trustScore: 4.6,
+    tripCount: 14,
+    completedCount: 58,
+    saves: 420,
     summary: "A flexible crawl built for hungry night owls.",
     tags: ["Night owl", "Budget", "Loose plan"],
     likes: 348,
@@ -390,6 +449,9 @@ const COMMUNITY_ITINERARIES = [
     daysCount: 2,
     trustScore: 4.8,
     remixOf: "Harbor Highlights in 2 Days",
+    tripCount: 11,
+    completedCount: 46,
+    saves: 330,
     summary: "Slow pacing with time for photos and stories.",
     tags: ["Photo", "History", "Slow pace"],
     likes: 212,
@@ -442,6 +504,7 @@ const DISCOVER_CURATED = [
     daysCount: 2,
     vibes: ["slow mornings", "photo walks", "low stress"],
     type: "curated",
+    pinned: true,
     author: "Lonely Planet",
     editor: "Alina Ross",
     credibilityLine:
@@ -455,6 +518,18 @@ const DISCOVER_CURATED = [
     tags: ["Classic", "Slow pace", "First timer"],
     expertNotes:
       "The order keeps walking light and builds in cafe time between stops.",
+    remixes: [
+      {
+        id: "remix-slow-weekend",
+        title: "Slow Harbor + Night Bites",
+        author: "Maya C.",
+        trustScore: 4.6,
+        tripCount: 10,
+        saves: 520,
+        completedCount: 48,
+        diffSummary: "+2 places, added night market",
+      },
+    ],
     days: [
       {
         day: "Day 1",
@@ -475,6 +550,7 @@ const DISCOVER_CURATED = [
     daysCount: 3,
     vibes: ["food-forward", "easy walks", "local tastes"],
     type: "curated",
+    pinned: true,
     author: "Lonely Planet",
     editor: "Samira Kline",
     credibilityLine:
@@ -488,6 +564,18 @@ const DISCOVER_CURATED = [
     tags: ["Food", "Balanced", "Neighborhoods"],
     expertNotes:
       "Keep each meal smaller so you can try more without rushing.",
+    remixes: [
+      {
+        id: "remix-food-night",
+        title: "Food-Forward Nights",
+        author: "Ravi S.",
+        trustScore: 4.7,
+        tripCount: 16,
+        saves: 610,
+        completedCount: 70,
+        diffSummary: "+3 places, swapped Day 2",
+      },
+    ],
     days: [
       {
         day: "Day 1",
@@ -513,6 +601,7 @@ const DISCOVER_CURATED = [
     daysCount: 2,
     vibes: ["early starts", "outdoors", "reset energy"],
     type: "curated",
+    pinned: true,
     author: "Lonely Planet",
     editor: "Marcus Lee",
     credibilityLine:
@@ -526,6 +615,18 @@ const DISCOVER_CURATED = [
     tags: ["Active", "Morning energy", "Outdoors"],
     expertNotes:
       "Swap the kayaking day if weather shifts. Keep the sunrise start.",
+    remixes: [
+      {
+        id: "remix-sunrise-lite",
+        title: "Sunrise Lite",
+        author: "Lena J.",
+        trustScore: 4.5,
+        tripCount: 8,
+        saves: 280,
+        completedCount: 32,
+        diffSummary: "-1 place, slower Day 2",
+      },
+    ],
     days: [
       {
         day: "Day 1",
@@ -551,6 +652,8 @@ const DISCOVER_COMMUNITY = [
     type: "community",
     author: "Kai M.",
     trustScore: 4.5,
+    tripCount: 9,
+    completedCount: 34,
     saves: 980,
     length: "short",
     budget: "budget",
@@ -571,6 +674,8 @@ const DISCOVER_COMMUNITY = [
     type: "community",
     author: "Lena J.",
     trustScore: 4.8,
+    tripCount: 18,
+    completedCount: 72,
     saves: 1120,
     length: "short",
     budget: "mid",
@@ -602,6 +707,8 @@ const DISCOVER_COMMUNITY = [
     type: "community",
     author: "Priya R.",
     trustScore: 4.4,
+    tripCount: 13,
+    completedCount: 41,
     saves: 860,
     length: "short",
     budget: "budget",
@@ -634,6 +741,8 @@ const DISCOVER_COMMUNITY = [
     author: "Miles T.",
     trustScore: 4.3,
     remixOf: "Art Studios + Coffee Breaks",
+    tripCount: 7,
+    completedCount: 29,
     saves: 640,
     length: "short",
     budget: "mid",
@@ -655,6 +764,8 @@ const DISCOVER_COMMUNITY = [
     author: "Sasha W.",
     trustScore: 4.9,
     remixOf: "Food-Forward First Timer",
+    tripCount: 20,
+    completedCount: 88,
     saves: 1510,
     length: "medium",
     budget: "mid",
@@ -777,6 +888,15 @@ const TIME_BLOCKS = [
 ];
 
 const getTimeBlock = (index) => TIME_BLOCKS[index % TIME_BLOCKS.length];
+
+const getCommunitySignals = (itinerary) => {
+  const trustScore = itinerary.trustScore ?? 4.5;
+  const tripCount = itinerary.tripCount ?? 0;
+  const completedCount = itinerary.completedCount ?? 0;
+  const saves = itinerary.saves ?? itinerary.likes ?? 0;
+  const verified = completedCount >= 30 && saves >= 200;
+  return { trustScore, tripCount, completedCount, saves, verified };
+};
 
 const matchesDiscoverFilters = (itinerary, filters, searchTerm) => {
   const normalized = searchTerm.trim().toLowerCase();
@@ -1684,17 +1804,26 @@ function DiscoverItineraryCard({ itinerary, onOpen }) {
   const daysCount = itinerary.days?.length ?? itinerary.daysCount ?? 0;
   const daysLabel = `${daysCount} day${daysCount === 1 ? "" : "s"}`;
   const isCurated = itinerary.type === "curated";
+  const isPinned = Boolean(itinerary.pinned && isCurated);
+  const communitySignals = getCommunitySignals(itinerary);
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-left transition hover:border-slate-500"
+      className={`group rounded-2xl border p-5 text-left transition hover:border-slate-500 ${
+        isPinned
+          ? "border-amber-400/50 bg-amber-500/10"
+          : "border-slate-800 bg-slate-900/40"
+      }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Badge tone={isCurated ? "curated" : "community"}>
-          {isCurated ? "LP Curated" : "Community"}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          {isPinned && <Badge tone="pinned">Pinned</Badge>}
+          <Badge tone={isCurated ? "curated" : "community"}>
+            {isCurated ? "LP Curated" : "Community"}
+          </Badge>
+        </div>
         <span className="text-xs text-slate-500">
           {formatSaves(itinerary.saves)} saves
         </span>
@@ -1706,6 +1835,14 @@ function DiscoverItineraryCard({ itinerary, onOpen }) {
         {itinerary.destination} • {daysLabel}
       </p>
       <p className="mt-3 text-sm text-slate-400">{itinerary.summary}</p>
+      {!isCurated && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span>Trust {communitySignals.trustScore.toFixed(1)}/5</span>
+          <span className="text-slate-600">•</span>
+          <span>{communitySignals.tripCount} trips</span>
+          {communitySignals.verified && <Badge tone="verified">Verified</Badge>}
+        </div>
+      )}
       <div className="mt-3 flex flex-wrap gap-2">
         {(itinerary.vibes ?? []).map((tag) => (
           <Badge key={tag} tone="subtle">
@@ -1714,6 +1851,30 @@ function DiscoverItineraryCard({ itinerary, onOpen }) {
         ))}
       </div>
     </button>
+  );
+}
+
+function RemixCard({ remix }) {
+  const signals = getCommunitySignals(remix);
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-slate-100">
+            {remix.title}
+          </div>
+          <div className="mt-1 text-xs text-slate-500">by {remix.author}</div>
+        </div>
+        <Badge tone="community">Community</Badge>
+      </div>
+      <p className="mt-3 text-sm text-slate-400">{remix.diffSummary}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <span>Trust {signals.trustScore.toFixed(1)}/5</span>
+        <span className="text-slate-600">•</span>
+        <span>{signals.tripCount} trips</span>
+        {signals.verified && <Badge tone="verified">Verified</Badge>}
+      </div>
+    </div>
   );
 }
 
@@ -1727,6 +1888,11 @@ function ItineraryScreen({
   onToast,
 }) {
   const [saved, setSaved] = useState(false);
+  const [detailTab, setDetailTab] = useState("original");
+
+  useEffect(() => {
+    setDetailTab("original");
+  }, [itinerary?.id]);
 
   if (uiMode === "loading") {
     return (
@@ -1763,6 +1929,7 @@ function ItineraryScreen({
   const placeIds = getPlaceIdsFromItinerary(itinerary);
   const isCurated = itinerary.type === "curated";
   const isDraft = itinerary.status === "draft";
+  const isPinned = Boolean(itinerary.pinned && isCurated);
   const dayGroups = itinerary?.days?.length
     ? itinerary.days
     : chunkIntoDays(placeIds, 3);
@@ -1773,8 +1940,9 @@ function ItineraryScreen({
   const editor = itinerary.editor ?? "LP Editorial Team";
   const credibilityLine =
     itinerary.credibilityLine ?? "Field-tested by Lonely Planet editors.";
-  const trustScore = itinerary.trustScore ?? 4.7;
-  const authorName = itinerary.author ?? (isCurated ? "Lonely Planet" : "Community");
+  const authorName =
+    itinerary.author ?? (isCurated ? "Lonely Planet" : "Community");
+  const communitySignals = getCommunitySignals(itinerary);
 
   const handleSave = () => {
     const nextSaved = !saved;
@@ -1807,7 +1975,13 @@ function ItineraryScreen({
 
   return (
     <div className="mt-8 space-y-6">
-      <section className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/40">
+      <section
+        className={`overflow-hidden rounded-3xl border ${
+          isPinned
+            ? "border-amber-400/50 bg-amber-500/10"
+            : "border-slate-800 bg-slate-900/40"
+        }`}
+      >
         <div className="relative h-40 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.25),_transparent_55%)]" />
           <div className="absolute inset-0 flex items-center justify-between px-6 text-xs text-slate-400">
@@ -1817,6 +1991,7 @@ function ItineraryScreen({
         </div>
         <div className="space-y-4 p-6">
           <div className="flex flex-wrap items-center gap-2">
+            {isPinned && <Badge tone="pinned">Pinned</Badge>}
             <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
               {isDraft
                 ? "Community draft"
@@ -1865,7 +2040,8 @@ function ItineraryScreen({
                       {authorName}
                     </p>
                     <p className="text-xs text-slate-500">
-                      Trust score {trustScore}/5
+                      Trust {communitySignals.trustScore.toFixed(1)}/5 •{" "}
+                      {communitySignals.tripCount} trips
                     </p>
                   </div>
                 </div>
@@ -1874,41 +2050,92 @@ function ItineraryScreen({
                     ? `Remix of ${itinerary.remixOf}`
                     : "Original community route"}
                 </p>
+                {communitySignals.verified && (
+                  <div>
+                    <Badge tone="verified">Verified</Badge>
+                  </div>
+                )}
               </div>
             )}
           </div>
 
-          <div className="space-y-4">
-            {dayGroups.map((day, dayIndex) => (
-              <div
-                key={day.day ?? `day-${dayIndex + 1}`}
-                className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
+          {isCurated && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDetailTab("original")}
+                className={`rounded-full border px-4 py-2 text-xs transition ${
+                  detailTab === "original"
+                    ? "border-slate-500 bg-slate-800 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
               >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <h3 className="text-lg font-semibold">
-                    {day.day ?? `Day ${dayIndex + 1}`}
-                  </h3>
-                  <span className="text-xs text-slate-500">
-                    {day.places.length} places
-                  </span>
+                Original
+              </button>
+              <button
+                type="button"
+                onClick={() => setDetailTab("remixes")}
+                className={`rounded-full border px-4 py-2 text-xs transition ${
+                  detailTab === "remixes"
+                    ? "border-slate-500 bg-slate-800 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                Remixes
+              </button>
+              <span className="text-xs text-slate-500">
+                Community remixes show how travelers adapted the plan.
+              </span>
+            </div>
+          )}
+
+          {(!isCurated || detailTab === "original") && (
+            <div className="space-y-4">
+              {dayGroups.map((day, dayIndex) => (
+                <div
+                  key={day.day ?? `day-${dayIndex + 1}`}
+                  className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold">
+                      {day.day ?? `Day ${dayIndex + 1}`}
+                    </h3>
+                    <span className="text-xs text-slate-500">
+                      {day.places.length} places
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-400">
+                    {day.summary ?? "Balanced pacing with room to wander."}
+                  </p>
+                  <div className="mt-4 space-y-4">
+                    {day.places.map((placeId, index) => (
+                      <TimelinePlaceCard
+                        key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
+                        place={placeMap[placeId]}
+                        order={index + 1}
+                        timeBlock={getTimeBlock(index)}
+                        onOpen={() => onOpenPlace(placeId)}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <p className="mt-2 text-sm text-slate-400">
-                  {day.summary ?? "Balanced pacing with room to wander."}
-                </p>
-                <div className="mt-4 space-y-4">
-                  {day.places.map((placeId, index) => (
-                    <TimelinePlaceCard
-                      key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
-                      place={placeMap[placeId]}
-                      order={index + 1}
-                      timeBlock={getTimeBlock(index)}
-                      onOpen={() => onOpenPlace(placeId)}
-                    />
-                  ))}
+              ))}
+            </div>
+          )}
+
+          {isCurated && detailTab === "remixes" && (
+            <div className="space-y-4">
+              {(itinerary.remixes ?? []).length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-sm text-slate-400">
+                  No remixes yet. Be the first to remix this itinerary.
                 </div>
-              </div>
-            ))}
-          </div>
+              ) : (
+                (itinerary.remixes ?? []).map((remix) => (
+                  <RemixCard key={remix.id} remix={remix} />
+                ))
+              )}
+            </div>
+          )}
         </section>
 
         <aside className="space-y-4">
@@ -2675,28 +2902,45 @@ function ItineraryCard({ itinerary, placeMap, onOpen }) {
   const placeIds = getPlaceIdsFromItinerary(itinerary);
   const isCurated = itinerary.type === "curated";
   const isDraft = itinerary.status === "draft";
+  const isPinned = Boolean(itinerary.pinned && isCurated);
+  const communitySignals = getCommunitySignals(itinerary);
   const previewPlaces = placeIds.slice(0, 3).map((id) => placeMap[id]?.name);
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="group rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-left transition hover:border-slate-500"
+      className={`group rounded-2xl border p-5 text-left transition hover:border-slate-500 ${
+        isPinned
+          ? "border-amber-400/50 bg-amber-500/10"
+          : "border-slate-800 bg-slate-900/40"
+      }`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
-          {isDraft
-            ? "Community draft"
-            : isCurated
-            ? "Lonely Planet curated"
-            : "Community itinerary"}
-        </Badge>
+        <div className="flex flex-wrap items-center gap-2">
+          {isPinned && <Badge tone="pinned">Pinned</Badge>}
+          <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
+            {isDraft
+              ? "Community draft"
+              : isCurated
+              ? "Lonely Planet curated"
+              : "Community itinerary"}
+          </Badge>
+        </div>
         <span className="text-xs text-slate-500">{placeIds.length} places</span>
       </div>
       <h4 className="mt-3 text-lg font-semibold group-hover:text-white">
         {itinerary.title}
       </h4>
       <p className="mt-2 text-sm text-slate-400">{itinerary.summary}</p>
+      {!isCurated && !isDraft && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span>Trust {communitySignals.trustScore.toFixed(1)}/5</span>
+          <span className="text-slate-600">•</span>
+          <span>{communitySignals.tripCount} trips</span>
+          {communitySignals.verified && <Badge tone="verified">Verified</Badge>}
+        </div>
+      )}
       <div className="mt-3 flex flex-wrap gap-2">
         {(itinerary.tags ?? []).map((tag) => (
           <Badge key={tag} tone="subtle">
@@ -2718,7 +2962,10 @@ function PlaceMiniCard({ place, onOpen, onAdd }) {
     <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Badge tone="subtle">{PLACE_TYPES[place.type]}</Badge>
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="subtle">{PLACE_TYPES[place.type]}</Badge>
+            <PlaceSourceChip place={place} />
+          </div>
           <h4 className="mt-2 text-base font-semibold">{place.name}</h4>
           <p className="mt-1 text-xs text-slate-500">{place.neighborhood}</p>
         </div>
@@ -2742,6 +2989,15 @@ function PlaceMiniCard({ place, onOpen, onAdd }) {
   );
 }
 
+function PlaceSourceChip({ place }) {
+  const isLP = place?.source === "lp";
+  return (
+    <Badge tone={isLP ? "lp" : "communityPick"}>
+      {isLP ? "LP pick" : "Added by community"}
+    </Badge>
+  );
+}
+
 function PlaceRow({ place, index, onOpen }) {
   if (!place) return null;
   return (
@@ -2758,6 +3014,9 @@ function PlaceRow({ place, index, onOpen }) {
           <div className="font-semibold">{place.name}</div>
           <div className="text-xs text-slate-500">
             {PLACE_TYPES[place.type]} - {place.duration}
+          </div>
+          <div className="mt-1">
+            <PlaceSourceChip place={place} />
           </div>
         </div>
       </div>
@@ -2791,6 +3050,9 @@ function TimelinePlaceCard({ place, order, timeBlock, onOpen }) {
                 {place.name}
               </div>
               <p className="mt-1 text-xs text-slate-400">{description}</p>
+              <div className="mt-2">
+                <PlaceSourceChip place={place} />
+              </div>
             </div>
           </div>
           <button
@@ -2868,6 +3130,9 @@ function EditorPlaceRow({
             <div className="text-xs text-slate-500">
               {PLACE_TYPES[place.type]} • {place.duration}
             </div>
+            <div className="mt-2">
+              <PlaceSourceChip place={place} />
+            </div>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 text-xs">
@@ -2914,6 +3179,10 @@ function Badge({ tone = "default", children }) {
     curated: "border-amber-400/40 text-amber-200 bg-amber-500/10",
     community: "border-emerald-400/40 text-emerald-200 bg-emerald-500/10",
     draft: "border-sky-400/40 text-sky-200 bg-sky-500/10",
+    pinned: "border-amber-300/60 text-amber-100 bg-amber-500/20",
+    verified: "border-emerald-300/60 text-emerald-100 bg-emerald-500/20",
+    lp: "border-amber-300/60 text-amber-100 bg-amber-500/15",
+    communityPick: "border-indigo-300/60 text-indigo-100 bg-indigo-500/15",
   };
   return (
     <span
