@@ -290,6 +290,272 @@ const COMMUNITY_ITINERARIES = [
   },
 ];
 
+const DISCOVER_FILTERS = {
+  length: [
+    { id: "any", label: "Any length" },
+    { id: "short", label: "1-2 days" },
+    { id: "medium", label: "3-4 days" },
+    { id: "long", label: "5+ days" },
+  ],
+  budget: [
+    { id: "any", label: "Any budget" },
+    { id: "budget", label: "Budget" },
+    { id: "mid", label: "Mid-range" },
+    { id: "splurge", label: "Treat" },
+  ],
+  pace: [
+    { id: "any", label: "Any pace" },
+    { id: "slow", label: "Slow" },
+    { id: "balanced", label: "Balanced" },
+    { id: "fast", label: "Fast" },
+  ],
+  interest: [
+    { id: "any", label: "Any interest" },
+    { id: "food", label: "Food" },
+    { id: "culture", label: "Culture" },
+    { id: "outdoors", label: "Outdoors" },
+    { id: "nightlife", label: "Nightlife" },
+    { id: "art", label: "Art" },
+    { id: "family", label: "Family" },
+  ],
+};
+
+const DISCOVER_CURATED = [
+  {
+    id: "lp-slow-harbor",
+    title: "Slow Harbor Weekend",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["slow mornings", "photo walks", "low stress"],
+    type: "curated",
+    author: "Lonely Planet",
+    saves: 1860,
+    length: "short",
+    budget: "mid",
+    pace: "slow",
+    interests: ["culture", "food"],
+    summary: "Gentle pacing with waterfront views and local flavors.",
+    tags: ["Classic", "Slow pace", "First timer"],
+    expertNotes:
+      "The order keeps walking light and builds in cafe time between stops.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Old quarter strolls and a market lunch.",
+        places: ["p-old-town-walk", "p-market-hall", "p-harbor-viewpoint"],
+      },
+      {
+        day: "Day 2",
+        summary: "Easy art loop and sunset at the pier.",
+        places: ["p-art-street", "p-museum-dock", "p-harbor-viewpoint"],
+      },
+    ],
+  },
+  {
+    id: "lp-food-forward",
+    title: "Food-Forward First Timer",
+    destination: "Harbor City",
+    daysCount: 3,
+    vibes: ["food-forward", "easy walks", "local tastes"],
+    type: "curated",
+    author: "Lonely Planet",
+    saves: 2410,
+    length: "medium",
+    budget: "mid",
+    pace: "balanced",
+    interests: ["food", "culture"],
+    summary: "A curated tasting tour with scenic breaks between bites.",
+    tags: ["Food", "Balanced", "Neighborhoods"],
+    expertNotes:
+      "Keep each meal smaller so you can try more without rushing.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Market hall and old quarter snacks.",
+        places: ["p-old-town-walk", "p-market-hall", "p-coffee-roastery"],
+      },
+      {
+        day: "Day 2",
+        summary: "Harbor views with a relaxed lunch.",
+        places: ["p-harbor-viewpoint", "p-ferry-loop", "p-market-hall"],
+      },
+      {
+        day: "Day 3",
+        summary: "Night market finale.",
+        places: ["p-art-street", "p-night-market"],
+      },
+    ],
+  },
+  {
+    id: "lp-sunrise-active",
+    title: "Sunrise + Waterline",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["early starts", "outdoors", "reset energy"],
+    type: "curated",
+    author: "Lonely Planet",
+    saves: 1320,
+    length: "short",
+    budget: "splurge",
+    pace: "fast",
+    interests: ["outdoors", "culture"],
+    summary: "Start with sunrise, finish with calm water time.",
+    tags: ["Active", "Morning energy", "Outdoors"],
+    expertNotes:
+      "Swap the kayaking day if weather shifts. Keep the sunrise start.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Sunrise views and old town loop.",
+        places: ["p-hill-temple", "p-old-town-walk", "p-coffee-roastery"],
+      },
+      {
+        day: "Day 2",
+        summary: "Kayak loop and breezy harbor views.",
+        places: ["p-river-kayak", "p-harbor-viewpoint", "p-ferry-loop"],
+      },
+    ],
+  },
+];
+
+const DISCOVER_COMMUNITY = [
+  {
+    id: "com-neon-bites",
+    title: "Neon Nights & Street Bites",
+    destination: "Harbor City",
+    daysCount: 1,
+    vibes: ["late nights", "street food", "loose plan"],
+    type: "community",
+    author: "Kai M.",
+    saves: 980,
+    length: "short",
+    budget: "budget",
+    pace: "balanced",
+    interests: ["nightlife", "food"],
+    summary: "A compact evening crawl built for hungry night owls.",
+    tags: ["Night owl", "Budget", "Food"],
+    notes:
+      "I keep this flexible. Grab the ferry loop if you want cooler air.",
+    places: ["p-night-market", "p-harbor-viewpoint", "p-coffee-roastery"],
+  },
+  {
+    id: "com-art-cafe",
+    title: "Art Studios + Coffee Breaks",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["creative", "cafe breaks", "slow chats"],
+    type: "community",
+    author: "Lena J.",
+    saves: 1120,
+    length: "short",
+    budget: "mid",
+    pace: "slow",
+    interests: ["art", "culture"],
+    summary: "A relaxed loop for gallery lovers who like to linger.",
+    tags: ["Art", "Slow pace", "Coffee"],
+    notes:
+      "Most galleries close early, so start by noon and linger at the roastery.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Art street and a long coffee stop.",
+        places: ["p-art-street", "p-coffee-roastery"],
+      },
+      {
+        day: "Day 2",
+        summary: "Museum dock and riverside walk.",
+        places: ["p-museum-dock", "p-old-town-walk"],
+      },
+    ],
+  },
+  {
+    id: "com-family-harbor",
+    title: "Family-Friendly Harbor Loop",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["kid-friendly", "short stops", "easy snacks"],
+    type: "community",
+    author: "Priya R.",
+    saves: 860,
+    length: "short",
+    budget: "budget",
+    pace: "slow",
+    interests: ["family", "culture"],
+    summary: "Short hops and snack breaks for younger travelers.",
+    tags: ["Family", "Easy pace", "Snacks"],
+    notes:
+      "We cut each stop to 60-90 minutes and used the ferry for a break.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Museum dock and market hall lunch.",
+        places: ["p-museum-dock", "p-market-hall"],
+      },
+      {
+        day: "Day 2",
+        summary: "Harbor viewpoint and a slow old town stroll.",
+        places: ["p-harbor-viewpoint", "p-old-town-walk"],
+      },
+    ],
+  },
+  {
+    id: "com-rainy-reset",
+    title: "Rainy Day Reset",
+    destination: "Harbor City",
+    daysCount: 1,
+    vibes: ["indoor calm", "slow pace", "warm drinks"],
+    type: "community",
+    author: "Miles T.",
+    saves: 640,
+    length: "short",
+    budget: "mid",
+    pace: "slow",
+    interests: ["culture", "art"],
+    summary: "An indoor-first loop for stormy afternoons.",
+    tags: ["Rainy day", "Indoor", "Slow pace"],
+    notes:
+      "I skip the ferry on wet days. The museum cafe is a cozy backup.",
+    places: ["p-museum-dock", "p-art-street", "p-coffee-roastery"],
+  },
+  {
+    id: "com-weekend-remix",
+    title: "Weekend Remix: Mix & Match",
+    destination: "Harbor City",
+    daysCount: 3,
+    vibes: ["flexible", "first timer", "choose your own"],
+    type: "community",
+    author: "Sasha W.",
+    saves: 1510,
+    length: "medium",
+    budget: "mid",
+    pace: "balanced",
+    interests: ["culture", "food", "outdoors"],
+    summary: "A flexible set of anchor stops with room to wander.",
+    tags: ["Flexible", "Balanced", "First timer"],
+    notes:
+      "Pick one anchor stop per day and fill the rest with whatever you see.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Old town and harbor views.",
+        places: ["p-old-town-walk", "p-harbor-viewpoint"],
+      },
+      {
+        day: "Day 2",
+        summary: "Water time with a market break.",
+        places: ["p-ferry-loop", "p-market-hall"],
+      },
+      {
+        day: "Day 3",
+        summary: "Art street and a night market finale.",
+        places: ["p-art-street", "p-night-market"],
+      },
+    ],
+  },
+];
+
+const DISCOVER_ITINERARIES = [...DISCOVER_CURATED, ...DISCOVER_COMMUNITY];
+
 const DRAFT_SEED = {
   id: "draft-1",
   title: "My weekend draft",
@@ -307,6 +573,8 @@ const UI_MODES = [
   { id: "empty", label: "Empty" },
   { id: "error", label: "Error" },
 ];
+
+const DISCOVER_UI_MODES = UI_MODES.filter((mode) => mode.id !== "error");
 
 const TYPE_FILTERS = [
   { id: "all", label: "All types" },
@@ -342,10 +610,60 @@ const chunkIntoDays = (placeIds, chunkSize) => {
   return days;
 };
 
+const formatSaves = (count) => {
+  if (!count) return "0";
+  if (count >= 1000) {
+    const rounded = (count / 1000).toFixed(1);
+    const trimmed = rounded.endsWith(".0") ? rounded.slice(0, -2) : rounded;
+    return `${trimmed}k`;
+  }
+  return `${count}`;
+};
+
+const matchesDiscoverFilters = (itinerary, filters, searchTerm) => {
+  const normalized = searchTerm.trim().toLowerCase();
+  if (normalized) {
+    const haystack = [
+      itinerary.title,
+      itinerary.destination,
+      itinerary.summary,
+      ...(itinerary.vibes ?? []),
+      ...(itinerary.tags ?? []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    if (!haystack.includes(normalized)) return false;
+  }
+
+  if (filters.length !== "any" && itinerary.length !== filters.length) {
+    return false;
+  }
+  if (filters.budget !== "any" && itinerary.budget !== filters.budget) {
+    return false;
+  }
+  if (filters.pace !== "any" && itinerary.pace !== filters.pace) {
+    return false;
+  }
+  if (
+    filters.interest !== "any" &&
+    !itinerary.interests?.includes(filters.interest)
+  ) {
+    return false;
+  }
+  return true;
+};
+
 export default function App() {
   const [history, setHistory] = useState([{ name: "home" }]);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState("all");
+  const [discoverSearch, setDiscoverSearch] = useState("");
+  const [discoverFilters, setDiscoverFilters] = useState({
+    length: "any",
+    budget: "any",
+    pace: "any",
+    interest: "any",
+  });
   const [uiMode, setUiMode] = useState("ready");
   const [toast, setToast] = useState("");
   const [draftPlaces, setDraftPlaces] = useState(DRAFT_SEED.places);
@@ -375,15 +693,20 @@ export default function App() {
     [draftTitle, draftPlaces]
   );
 
-  const allItineraries = useMemo(
+  const homeItineraries = useMemo(
     () => [...CURATED_ITINERARIES, ...COMMUNITY_ITINERARIES, draftItinerary],
     [draftItinerary]
+  );
+
+  const allItineraries = useMemo(
+    () => [...homeItineraries, ...DISCOVER_ITINERARIES],
+    [homeItineraries]
   );
 
   const normalizedSearch = search.trim().toLowerCase();
 
   const filteredItineraries = useMemo(() => {
-    let items = allItineraries;
+    let items = homeItineraries;
     if (typeFilter !== "all") {
       items = items.filter((item) => item.type === typeFilter);
     }
@@ -401,7 +724,18 @@ export default function App() {
       });
     }
     return items;
-  }, [allItineraries, typeFilter, normalizedSearch]);
+  }, [homeItineraries, typeFilter, normalizedSearch]);
+
+  const discoverResults = useMemo(() => {
+    const filtered = DISCOVER_ITINERARIES.filter((itinerary) =>
+      matchesDiscoverFilters(itinerary, discoverFilters, discoverSearch)
+    );
+    return {
+      curated: filtered.filter((item) => item.type === "curated"),
+      community: filtered.filter((item) => item.type === "community"),
+      total: filtered.length,
+    };
+  }, [discoverFilters, discoverSearch]);
 
   const featuredPlaces = PLACE_CATALOG.slice(0, 6);
 
@@ -486,6 +820,17 @@ export default function App() {
               </button>
               <button
                 type="button"
+                onClick={() => navigate({ name: "discover" })}
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  route.name === "discover"
+                    ? "border-indigo-400/60 bg-indigo-500/20 text-indigo-200"
+                    : "border-indigo-400/40 text-indigo-200 hover:border-indigo-300"
+                }`}
+              >
+                Discover
+              </button>
+              <button
+                type="button"
                 onClick={() => navigate({ name: "builder" })}
                 className={`rounded-full border px-4 py-2 text-sm transition ${
                   route.name === "builder"
@@ -551,6 +896,23 @@ export default function App() {
             onOpenPlace={(id) => navigate({ name: "place", placeId: id })}
             onAddToDraft={addPlaceToDraft}
             draftItinerary={draftItinerary}
+          />
+        )}
+
+        {route.name === "discover" && (
+          <DiscoverScreen
+            uiMode={uiMode}
+            setUiMode={setUiMode}
+            search={discoverSearch}
+            setSearch={setDiscoverSearch}
+            filters={discoverFilters}
+            setFilters={setDiscoverFilters}
+            curatedItineraries={discoverResults.curated}
+            communityItineraries={discoverResults.community}
+            totalResults={discoverResults.total}
+            onOpenItinerary={(id) =>
+              navigate({ name: "itinerary", itineraryId: id })
+            }
           />
         )}
 
@@ -851,6 +1213,305 @@ function HomeScreen({
         </section>
       </aside>
     </div>
+  );
+}
+
+function DiscoverScreen({
+  uiMode,
+  setUiMode,
+  search,
+  setSearch,
+  filters,
+  setFilters,
+  curatedItineraries,
+  communityItineraries,
+  totalResults,
+  onOpenItinerary,
+}) {
+  const showEmpty =
+    uiMode === "empty" || (uiMode === "ready" && totalResults === 0);
+
+  const updateFilter = (key, value) =>
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+
+  const resetFilters = () =>
+    setFilters({
+      length: "any",
+      budget: "any",
+      pace: "any",
+      interest: "any",
+    });
+
+  return (
+    <div className="mt-8 space-y-6">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Discover itineraries</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Start with a vibe, then narrow by trip length, budget, and pace.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              {totalResults} matches
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              {curatedItineraries.length} curated
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              {communityItineraries.length} community
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="flex min-w-[240px] flex-1 items-center rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200">
+            <span className="mr-2 text-slate-500">Search</span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search destinations, vibes, or names"
+              className="w-full bg-transparent text-sm text-slate-200 outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+          >
+            Clear search
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-4">
+          <FilterGroup
+            label="Trip length"
+            options={DISCOVER_FILTERS.length}
+            value={filters.length}
+            onChange={(value) => updateFilter("length", value)}
+          />
+          <FilterGroup
+            label="Budget"
+            options={DISCOVER_FILTERS.budget}
+            value={filters.budget}
+            onChange={(value) => updateFilter("budget", value)}
+          />
+          <FilterGroup
+            label="Pace"
+            options={DISCOVER_FILTERS.pace}
+            value={filters.pace}
+            onChange={(value) => updateFilter("pace", value)}
+          />
+          <FilterGroup
+            label="Interests"
+            options={DISCOVER_FILTERS.interest}
+            value={filters.interest}
+            onChange={(value) => updateFilter("interest", value)}
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+          <p>Filters only affect this screen. No edits are saved.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              resetFilters();
+              setUiMode("ready");
+            }}
+            className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+          >
+            Reset filters
+          </button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              UI state
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Switch to preview loading and empty messaging.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {DISCOVER_UI_MODES.map((mode) => (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setUiMode(mode.id)}
+                className={`rounded-full border px-3 py-1 text-xs transition ${
+                  uiMode === mode.id
+                    ? "border-amber-400/50 bg-amber-500/10 text-amber-100"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {uiMode === "loading" && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {[0, 1, 2, 3, 4, 5].map((index) => (
+            <SkeletonCard key={`discover-sk-${index}`} />
+          ))}
+        </div>
+      )}
+
+      {uiMode === "error" && (
+        <ErrorState
+          title="Discover is temporarily offline"
+          description="This prototype is running locally. Switch back to Ready."
+          actionLabel="Switch to Ready"
+          onAction={() => setUiMode("ready")}
+        />
+      )}
+
+      {showEmpty && (
+        <EmptyState
+          title="No itineraries match your filters"
+          description="Try widening your trip length or clearing your search."
+          actionLabel="Clear filters"
+          onAction={() => {
+            setSearch("");
+            resetFilters();
+            setUiMode("ready");
+          }}
+        />
+      )}
+
+      {uiMode === "ready" && totalResults > 0 && (
+        <div className="space-y-6">
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold">
+                Curated by Lonely Planet
+              </h3>
+              <span className="text-xs text-slate-500">
+                {curatedItineraries.length} itineraries
+              </span>
+            </div>
+            <p className="text-sm text-slate-400">
+              Expert sequencing, pacing notes, and practical tips included.
+            </p>
+            {curatedItineraries.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-sm text-slate-400">
+                No curated itineraries match this filter set yet.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {curatedItineraries.map((itinerary) => (
+                  <DiscoverItineraryCard
+                    key={itinerary.id}
+                    itinerary={itinerary}
+                    onOpen={() => onOpenItinerary(itinerary.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold">From the community</h3>
+              <span className="text-xs text-slate-500">
+                {communityItineraries.length} itineraries
+              </span>
+            </div>
+            <p className="text-sm text-slate-400">
+              Personal routes with flexible pacing and lots of remix potential.
+            </p>
+            {communityItineraries.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-sm text-slate-400">
+                No community itineraries match this filter set yet.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {communityItineraries.map((itinerary) => (
+                  <DiscoverItineraryCard
+                    key={itinerary.id}
+                    itinerary={itinerary}
+                    onOpen={() => onOpenItinerary(itinerary.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterGroup({ label, options, value, onChange }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            className={`rounded-full border px-3 py-1 text-xs transition ${
+              value === option.id
+                ? "border-slate-500 bg-slate-800 text-white"
+                : "border-slate-700 text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DiscoverItineraryCard({ itinerary, onOpen }) {
+  const daysCount = itinerary.days?.length ?? itinerary.daysCount ?? 0;
+  const daysLabel = `${daysCount} day${daysCount === 1 ? "" : "s"}`;
+  const isCurated = itinerary.type === "curated";
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="group rounded-2xl border border-slate-800 bg-slate-900/40 p-5 text-left transition hover:border-slate-500"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Badge tone={isCurated ? "curated" : "community"}>
+          {isCurated ? "LP Curated" : "Community"}
+        </Badge>
+        <span className="text-xs text-slate-500">
+          {formatSaves(itinerary.saves)} saves
+        </span>
+      </div>
+      <h4 className="mt-3 text-lg font-semibold group-hover:text-white">
+        {itinerary.title}
+      </h4>
+      <p className="mt-2 text-sm text-slate-400">
+        {itinerary.destination} • {daysLabel}
+      </p>
+      <p className="mt-3 text-sm text-slate-400">{itinerary.summary}</p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(itinerary.vibes ?? []).map((tag) => (
+          <Badge key={tag} tone="subtle">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    </button>
   );
 }
 
