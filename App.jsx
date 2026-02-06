@@ -24,13 +24,22 @@ const PLACE_CATALOG = [
     price: "Free",
     bestTime: "Morning",
     energy: "Easy",
+    hours: "Always open",
+    cost: "Free",
+    bookingRequired: "No",
     headline: "Stone lanes, bakeries, and river views.",
     description:
       "A slow loop through the oldest blocks with stops for photos and snacks.",
+    lpNote:
+      "This is the quietest way to feel the city wake up, with photo light built in.",
     tips: [
       "Start before 9am for quiet streets.",
       "Pick one bakery and commit.",
       "Loop back along the river for cooler air.",
+    ],
+    communityTips: [
+      "Grab coffee on the north corner before you start.",
+      "Keep an extra 15 minutes for the river steps.",
     ],
     highlights: ["Clock tower", "Riverside steps", "Hidden courtyards"],
     goodFor: "First-time visitors",
@@ -44,12 +53,21 @@ const PLACE_CATALOG = [
     price: "$",
     bestTime: "Golden hour",
     energy: "Easy",
+    hours: "6:00am - 9:00pm",
+    cost: "Free",
+    bookingRequired: "No",
     headline: "Wide views of ferries, cranes, and skyline.",
     description:
       "A compact overlook with plenty of seating and a clear sightline to the port.",
+    lpNote:
+      "We love this as a reset stop; it gives perspective without a big detour.",
     tips: [
       "Bring a light jacket for wind.",
       "Plan a 10 minute buffer for sunset crowds.",
+    ],
+    communityTips: [
+      "The benches on the left get the best sunset glow.",
+      "Go early if you want the front railing.",
     ],
     highlights: ["Pier lookout", "Harbor bridge", "Photo benches"],
     goodFor: "Short breaks",
@@ -63,12 +81,21 @@ const PLACE_CATALOG = [
     price: "$$",
     bestTime: "Afternoon",
     energy: "Moderate",
+    hours: "10:00am - 6:00pm",
+    cost: "$15 ticket",
+    bookingRequired: "Yes - timed",
     headline: "A breezy ride that connects the main districts.",
     description:
       "Ride the loop for an easy orientation. Hop off for quick snacks or views.",
+    lpNote:
+      "This is our favorite low-effort orientation ride before a first big day.",
     tips: [
       "Sit on the right side for skyline views.",
       "Tickets are timed, arrive 10 minutes early.",
+    ],
+    communityTips: [
+      "Loop once before you hop off so you know the stops.",
+      "Bring a light snack for the ride back.",
     ],
     highlights: ["Skyline loop", "Island stop", "Harbor breeze"],
     goodFor: "Orientation day",
@@ -82,12 +109,21 @@ const PLACE_CATALOG = [
     price: "$$",
     bestTime: "Midday",
     energy: "Easy",
+    hours: "11:00am - 3:00pm",
+    cost: "$10-$18",
+    bookingRequired: "No",
     headline: "Quick bites, shared tables, and local favorites.",
     description:
       "A buzzing hall with rotating stalls. Perfect for a flexible group lunch.",
+    lpNote:
+      "Ideal for groups who want choice without splitting up for too long.",
     tips: [
       "Split into pairs and meet at the long tables.",
       "Go early to avoid the 12:30 rush.",
+    ],
+    communityTips: [
+      "Pick a table first, then order.",
+      "Line up at the noodle stall before noon.",
     ],
     highlights: ["Noodle stall", "Fresh juice", "Spice counter"],
     goodFor: "Groups",
@@ -101,12 +137,21 @@ const PLACE_CATALOG = [
     price: "$",
     bestTime: "Late evening",
     energy: "Moderate",
+    hours: "6:00pm - 11:00pm",
+    cost: "$5-$12",
+    bookingRequired: "No",
     headline: "Small plates, bright lights, and slow wandering.",
     description:
       "A casual crawl with low stakes. Try three dishes and call it a night.",
+    lpNote:
+      "We keep the list short here so you can wander without the pressure.",
     tips: [
       "Bring small cash for quick transactions.",
       "Pick one sweet stop at the end.",
+    ],
+    communityTips: [
+      "Share everything so you can sample more.",
+      "The grilled skewers sell out after 9pm.",
     ],
     highlights: ["Grill alley", "Tea stand", "Dessert row"],
     goodFor: "Night owls",
@@ -120,12 +165,21 @@ const PLACE_CATALOG = [
     price: "Free",
     bestTime: "Afternoon",
     energy: "Easy",
+    hours: "11:00am - 6:00pm",
+    cost: "Free",
+    bookingRequired: "No",
     headline: "Studios, small galleries, and murals in one loop.",
     description:
       "Open doors and rotating exhibitions. Easy to mix with coffee breaks.",
+    lpNote:
+      "This loop keeps walking easy and pairs well with a long cafe stop.",
     tips: [
       "Check the pop up schedule for live demos.",
       "Most galleries close by 6pm.",
+    ],
+    communityTips: [
+      "Stop at the print shop for small gifts.",
+      "The mural alley is best before sunset.",
     ],
     highlights: ["Mural alley", "Studio row", "Print shop"],
     goodFor: "Creative travelers",
@@ -139,12 +193,21 @@ const PLACE_CATALOG = [
     price: "$$",
     bestTime: "Morning",
     energy: "Easy",
+    hours: "9:00am - 5:00pm",
+    cost: "$18",
+    bookingRequired: "Recommended",
     headline: "Stories of the port with hands-on exhibits.",
     description:
       "A compact museum with good pacing and a quiet dockside cafe.",
+    lpNote:
+      "A solid indoor stop when you want history without a heavy museum day.",
     tips: [
       "Tickets are cheapest before noon.",
       "Check the top deck for fresh air.",
+    ],
+    communityTips: [
+      "The cafe is quiet between 2-3pm.",
+      "Grab the audio guide if you like short stories.",
     ],
     highlights: ["Ship models", "Captain logbook", "Dockside cafe"],
     goodFor: "Rainy days",
@@ -158,12 +221,21 @@ const PLACE_CATALOG = [
     price: "$$",
     bestTime: "Morning",
     energy: "Active",
+    hours: "8:00am - 2:00pm",
+    cost: "$45",
+    bookingRequired: "Yes",
     headline: "A calm paddle with skyline views.",
     description:
       "Guided kayaks on a gentle loop. A great reset between city walks.",
+    lpNote:
+      "A peaceful water reset that still delivers skyline views.",
     tips: [
       "Wear quick-dry layers.",
       "Lockers are small, pack light.",
+    ],
+    communityTips: [
+      "Pack a dry bag if you have a phone.",
+      "Arrive early to pick a front seat.",
     ],
     highlights: ["Floating garden", "Bridge arch", "Quiet inlets"],
     goodFor: "Active mornings",
@@ -177,12 +249,21 @@ const PLACE_CATALOG = [
     price: "$",
     bestTime: "Sunrise",
     energy: "Moderate",
+    hours: "5:00am - 8:00pm",
+    cost: "$6",
+    bookingRequired: "No",
     headline: "City views and a calm start to the day.",
     description:
       "Short climb, big payoff. Bring a light snack for the steps.",
+    lpNote:
+      "A sunrise here sets the tone for the rest of the day.",
     tips: [
       "Arrive 20 minutes before sunrise.",
       "Wear shoes with grip on the stone stairs.",
+    ],
+    communityTips: [
+      "Bring a small snack for the top.",
+      "The bells ring at 7am on weekdays.",
     ],
     highlights: ["Temple steps", "City panorama", "Morning bells"],
     goodFor: "Early risers",
@@ -196,12 +277,21 @@ const PLACE_CATALOG = [
     price: "$$",
     bestTime: "Mid morning",
     energy: "Easy",
+    hours: "8:00am - 4:00pm",
+    cost: "$8-$15",
+    bookingRequired: "No",
     headline: "Flights of local roasts with a calm vibe.",
     description:
       "A relaxed tasting bar with a short explanation of each roast.",
+    lpNote:
+      "A mellow caffeine stop that keeps you close to the river breeze.",
     tips: [
       "Ask for the lighter roast if you have more stops ahead.",
       "Pick up beans for the next morning.",
+    ],
+    communityTips: [
+      "The patio seats go fast after 10am.",
+      "Order the tasting flight and share.",
     ],
     highlights: ["Tasting flight", "Riverside patio", "Biscuit tray"],
     goodFor: "Coffee fans",
@@ -1892,8 +1982,19 @@ function PlaceScreen({
 
   return (
     <div className="mt-8 space-y-6">
-      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-        <div className="flex flex-wrap items-start justify-between gap-4">
+      <section className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {[1, 2, 3].map((index) => (
+            <div
+              key={`image-${index}`}
+              className="min-w-[220px] flex-1 rounded-2xl border border-slate-700 bg-slate-950/60 p-4 text-xs text-slate-500"
+            >
+              <div className="h-24 rounded-xl border border-dashed border-slate-700 bg-slate-950/60" />
+              <p className="mt-3">Image {index} of 3</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2">
               <Badge tone="subtle">{PLACE_TYPES[place.type]}</Badge>
@@ -1903,21 +2004,21 @@ function PlaceScreen({
             <p className="mt-2 text-sm text-slate-400">{place.headline}</p>
           </div>
           <div className="flex flex-col gap-3">
-            {inDraft ? (
+            <button
+              type="button"
+              onClick={() => onAddToDraft(place.id)}
+              disabled={inDraft}
+              className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {inDraft ? "Added to itinerary" : "Add to itinerary"}
+            </button>
+            {inDraft && (
               <button
                 type="button"
                 onClick={() => onRemoveFromDraft(place.id)}
                 className="rounded-full border border-rose-400/40 px-4 py-2 text-sm text-rose-200 hover:border-rose-300"
               >
-                Remove from draft
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => onAddToDraft(place.id)}
-                className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
-              >
-                Add to draft
+                Remove from itinerary
               </button>
             )}
             <button
@@ -1937,20 +2038,32 @@ function PlaceScreen({
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
         <section className="space-y-6">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-            <h3 className="text-lg font-semibold">Why it fits</h3>
-            <p className="mt-3 text-sm text-slate-400">{place.description}</p>
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <InfoTile label="Time" value={place.duration} />
-              <InfoTile label="Price" value={place.price} />
+            <h3 className="text-lg font-semibold">Why we love it</h3>
+            <p className="mt-3 text-sm text-slate-400">
+              {place.lpNote ?? "LP editorial note coming soon."}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Lonely Planet editorial note.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <h3 className="text-lg font-semibold">Practicals</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <InfoTile label="Hours" value={place.hours} />
+              <InfoTile label="Cost" value={place.cost} />
+              <InfoTile label="Booking" value={place.bookingRequired} />
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
               <InfoTile label="Best time" value={place.bestTime} />
               <InfoTile label="Energy" value={place.energy} />
             </div>
           </div>
 
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-            <h3 className="text-lg font-semibold">Local tips</h3>
+            <h3 className="text-lg font-semibold">Tips from community</h3>
             <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              {place.tips.map((tip) => (
+              {place.communityTips.map((tip) => (
                 <li key={tip} className="rounded-xl border border-slate-700 p-3">
                   {tip}
                 </li>
