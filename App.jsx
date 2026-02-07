@@ -14,6 +14,27 @@ const PLACE_ICONS = {
   activity: "ACT",
 };
 
+const VIBE_OPTIONS = [
+  {
+    id: "relaxed",
+    label: "Relaxed",
+    placesPerDay: 3,
+    summary: "Longer breaks and fewer stops.",
+  },
+  {
+    id: "balanced",
+    label: "Balanced",
+    placesPerDay: 4,
+    summary: "Balanced pacing with room to wander.",
+  },
+  {
+    id: "packed",
+    label: "Packed",
+    placesPerDay: 5,
+    summary: "More stops with tighter timing.",
+  },
+];
+
 const PLACE_CATALOG = [
   {
     id: "p-old-town-walk",
@@ -845,13 +866,13 @@ const buildPlaceMap = () => {
   return map;
 };
 
-const chunkIntoDays = (placeIds, chunkSize) => {
+const chunkIntoDays = (placeIds, chunkSize, summary) => {
   const days = [];
   for (let i = 0; i < placeIds.length; i += chunkSize) {
     const dayNumber = days.length + 1;
     days.push({
       day: `Day ${dayNumber}`,
-      summary: "Auto-grouped for a balanced pace.",
+      summary: summary ?? "Auto-grouped for a balanced pace.",
       places: placeIds.slice(i, i + chunkSize),
     });
   }
@@ -887,8 +908,6 @@ const TIME_BLOCKS = [
   "8:30 PM",
 ];
 
-const getTimeBlock = (index) => TIME_BLOCKS[index % TIME_BLOCKS.length];
-
 const getCommunitySignals = (itinerary) => {
   const trustScore = itinerary.trustScore ?? 4.5;
   const tripCount = itinerary.tripCount ?? 0;
@@ -896,6 +915,36 @@ const getCommunitySignals = (itinerary) => {
   const saves = itinerary.saves ?? itinerary.likes ?? 0;
   const verified = completedCount >= 30 && saves >= 200;
   return { trustScore, tripCount, completedCount, saves, verified };
+};
+
+const getVibeConfig = (vibe) =>
+  VIBE_OPTIONS.find((option) => option.id === vibe) ?? VIBE_OPTIONS[1];
+
+const VIBE_TIME_BLOCKS = {
+  relaxed: ["9:00 AM", "12:00 PM", "3:30 PM", "7:00 PM"],
+  balanced: TIME_BLOCKS,
+  packed: [
+    "7:30 AM",
+    "9:00 AM",
+    "10:15 AM",
+    "11:30 AM",
+    "12:45 PM",
+    "2:00 PM",
+    "3:15 PM",
+    "4:30 PM",
+    "5:45 PM",
+    "7:00 PM",
+  ],
+};
+
+const getVibeTimeBlock = (index, vibe) => {
+  const blocks = VIBE_TIME_BLOCKS[vibe] ?? TIME_BLOCKS;
+  return blocks[index % blocks.length];
+};
+
+const buildVibeDays = (placeIds, vibe) => {
+  const config = getVibeConfig(vibe);
+  return chunkIntoDays(placeIds, config.placesPerDay, config.summary);
 };
 
 const matchesDiscoverFilters = (itinerary, filters, searchTerm) => {
@@ -955,6 +1004,7 @@ export default function App() {
   const [coverImagePresent, setCoverImagePresent] = useState(
     DRAFT_SEED.coverImagePresent
   );
+  const [draftVibe, setDraftVibe] = useState("balanced");
   const [draftPlaceNotes, setDraftPlaceNotes] = useState({});
   const [draftDayNotes, setDraftDayNotes] = useState({});
   const [publishStatus, setPublishStatus] = useState("Draft");
@@ -981,9 +1031,17 @@ export default function App() {
       description: draftDescription,
       visibility: draftVisibility,
       coverImagePresent,
+      vibe: draftVibe,
       places: draftPlaces,
     }),
-    [draftTitle, draftDescription, draftVisibility, coverImagePresent, draftPlaces]
+    [
+      draftTitle,
+      draftDescription,
+      draftVisibility,
+      coverImagePresent,
+      draftVibe,
+      draftPlaces,
+    ]
   );
 
   const homeItineraries = useMemo(
@@ -1084,6 +1142,7 @@ export default function App() {
     setDraftDescription(itinerary.summary ?? "");
     setDraftVisibility("Private");
     setCoverImagePresent(false);
+    setDraftVibe("balanced");
     setDraftPlaceNotes({});
     setDraftDayNotes({});
     setPublishStatus("Draft");
@@ -1094,8 +1153,8 @@ export default function App() {
 
   const draftDayGroups = useMemo(() => {
     if (!groupDraftByDay) return [];
-    return chunkIntoDays(draftPlaces, 4);
-  }, [draftPlaces, groupDraftByDay]);
+    return buildVibeDays(draftPlaces, draftVibe);
+  }, [draftPlaces, groupDraftByDay, draftVibe]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -1264,6 +1323,8 @@ export default function App() {
             setDraftVisibility={setDraftVisibility}
             coverImagePresent={coverImagePresent}
             setCoverImagePresent={setCoverImagePresent}
+            draftVibe={draftVibe}
+            setDraftVibe={setDraftVibe}
             draftPlaces={draftPlaces}
             placeMap={placeMap}
             groupDraftByDay={groupDraftByDay}
@@ -1878,6 +1939,27 @@ function RemixCard({ remix }) {
   );
 }
 
+function VibeToggle({ value, onChange }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {VIBE_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => onChange(option.id)}
+          className={`rounded-full border px-3 py-1 text-xs transition ${
+            value === option.id
+              ? "border-slate-500 bg-slate-800 text-white"
+              : "border-slate-700 text-slate-300 hover:border-slate-500"
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function ItineraryScreen({
   uiMode,
   itinerary,
@@ -1889,9 +1971,11 @@ function ItineraryScreen({
 }) {
   const [saved, setSaved] = useState(false);
   const [detailTab, setDetailTab] = useState("original");
+  const [detailVibe, setDetailVibe] = useState("balanced");
 
   useEffect(() => {
     setDetailTab("original");
+    setDetailVibe("balanced");
   }, [itinerary?.id]);
 
   if (uiMode === "loading") {
@@ -1930,11 +2014,11 @@ function ItineraryScreen({
   const isCurated = itinerary.type === "curated";
   const isDraft = itinerary.status === "draft";
   const isPinned = Boolean(itinerary.pinned && isCurated);
-  const dayGroups = itinerary?.days?.length
-    ? itinerary.days
-    : chunkIntoDays(placeIds, 3);
-  const daysCount =
-    itinerary?.days?.length ?? itinerary?.daysCount ?? dayGroups.length;
+  const dayGroups =
+    detailVibe === "balanced" && itinerary?.days?.length
+      ? itinerary.days
+      : buildVibeDays(placeIds, detailVibe);
+  const daysCount = dayGroups.length;
   const destination = itinerary.destination ?? "Harbor City";
   const daysLabel = `${daysCount} day${daysCount === 1 ? "" : "s"}`;
   const editor = itinerary.editor ?? "LP Editorial Team";
@@ -2059,6 +2143,18 @@ function ItineraryScreen({
             )}
           </div>
 
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Vibe
+              </p>
+              <VibeToggle value={detailVibe} onChange={setDetailVibe} />
+            </div>
+            <p className="text-xs text-slate-500">
+              {getVibeConfig(detailVibe).summary}
+            </p>
+          </div>
+
           {isCurated && (
             <div className="flex flex-wrap items-center gap-2">
               <button
@@ -2113,7 +2209,7 @@ function ItineraryScreen({
                         key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
                         place={placeMap[placeId]}
                         order={index + 1}
-                        timeBlock={getTimeBlock(index)}
+                      timeBlock={getVibeTimeBlock(index, detailVibe)}
                         onOpen={() => onOpenPlace(placeId)}
                       />
                     ))}
@@ -2420,6 +2516,8 @@ function EditorScreen({
   setDraftVisibility,
   coverImagePresent,
   setCoverImagePresent,
+  draftVibe,
+  setDraftVibe,
   draftPlaces,
   placeMap,
   groupDraftByDay,
@@ -2443,6 +2541,7 @@ function EditorScreen({
   const [placeQuery, setPlaceQuery] = useState("");
   const [showPublishModal, setShowPublishModal] = useState(false);
   const [publishErrors, setPublishErrors] = useState([]);
+  const vibeConfig = getVibeConfig(draftVibe);
 
   const placeIndexMap = useMemo(() => {
     const map = {};
@@ -2670,6 +2769,17 @@ function EditorScreen({
         <aside className="space-y-4">
           <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
             <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Vibe
+            </p>
+            <div className="mt-3">
+              <VibeToggle value={draftVibe} onChange={setDraftVibe} />
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              {vibeConfig.summary} ({vibeConfig.placesPerDay} places/day)
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
               Add a place
             </p>
             <div className="relative mt-3">
@@ -2724,7 +2834,7 @@ function EditorScreen({
                 onClick={() => setGroupDraftByDay(true)}
                 className="w-full rounded-full border border-amber-400/50 px-4 py-2 text-xs text-amber-100 hover:border-amber-300"
               >
-                Auto-split into days (4 places/day)
+                Auto-split into days ({vibeConfig.placesPerDay} places/day)
               </button>
               <button
                 type="button"
