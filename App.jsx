@@ -1,0 +1,3383 @@
+import React, { useEffect, useMemo, useState } from "react";
+
+const PLACE_TYPES = {
+  attraction: "Attraction",
+  food: "Food",
+  neighborhood: "Neighborhood",
+  activity: "Activity",
+};
+
+const PLACE_ICONS = {
+  attraction: "A",
+  food: "F",
+  neighborhood: "N",
+  activity: "ACT",
+};
+
+const VIBE_OPTIONS = [
+  {
+    id: "relaxed",
+    label: "Relaxed",
+    placesPerDay: 3,
+    summary: "Longer breaks and fewer stops.",
+  },
+  {
+    id: "balanced",
+    label: "Balanced",
+    placesPerDay: 4,
+    summary: "Balanced pacing with room to wander.",
+  },
+  {
+    id: "packed",
+    label: "Packed",
+    placesPerDay: 5,
+    summary: "More stops with tighter timing.",
+  },
+];
+
+const PLACE_CATALOG = [
+  {
+    id: "p-old-town-walk",
+    name: "Old Town Morning Walk",
+    type: "neighborhood",
+    source: "lp",
+    neighborhood: "Old Quarter",
+    duration: "1.5 hr",
+    price: "Free",
+    bestTime: "Morning",
+    energy: "Easy",
+    hours: "Always open",
+    cost: "Free",
+    bookingRequired: "No",
+    headline: "Stone lanes, bakeries, and river views.",
+    description:
+      "A slow loop through the oldest blocks with stops for photos and snacks.",
+    lpNote:
+      "This is the quietest way to feel the city wake up, with photo light built in.",
+    tips: [
+      "Start before 9am for quiet streets.",
+      "Pick one bakery and commit.",
+      "Loop back along the river for cooler air.",
+    ],
+    communityTips: [
+      "Grab coffee on the north corner before you start.",
+      "Keep an extra 15 minutes for the river steps.",
+    ],
+    highlights: ["Clock tower", "Riverside steps", "Hidden courtyards"],
+    goodFor: "First-time visitors",
+  },
+  {
+    id: "p-harbor-viewpoint",
+    name: "Harbor Viewpoint",
+    type: "attraction",
+    source: "lp",
+    neighborhood: "South Pier",
+    duration: "45 min",
+    price: "$",
+    bestTime: "Golden hour",
+    energy: "Easy",
+    hours: "6:00am - 9:00pm",
+    cost: "Free",
+    bookingRequired: "No",
+    headline: "Wide views of ferries, cranes, and skyline.",
+    description:
+      "A compact overlook with plenty of seating and a clear sightline to the port.",
+    lpNote:
+      "We love this as a reset stop; it gives perspective without a big detour.",
+    tips: [
+      "Bring a light jacket for wind.",
+      "Plan a 10 minute buffer for sunset crowds.",
+    ],
+    communityTips: [
+      "The benches on the left get the best sunset glow.",
+      "Go early if you want the front railing.",
+    ],
+    highlights: ["Pier lookout", "Harbor bridge", "Photo benches"],
+    goodFor: "Short breaks",
+  },
+  {
+    id: "p-ferry-loop",
+    name: "Ferry Loop Ride",
+    type: "activity",
+    source: "community",
+    neighborhood: "Waterfront",
+    duration: "2 hr",
+    price: "$$",
+    bestTime: "Afternoon",
+    energy: "Moderate",
+    hours: "10:00am - 6:00pm",
+    cost: "$15 ticket",
+    bookingRequired: "Yes - timed",
+    headline: "A breezy ride that connects the main districts.",
+    description:
+      "Ride the loop for an easy orientation. Hop off for quick snacks or views.",
+    lpNote:
+      "This is our favorite low-effort orientation ride before a first big day.",
+    tips: [
+      "Sit on the right side for skyline views.",
+      "Tickets are timed, arrive 10 minutes early.",
+    ],
+    communityTips: [
+      "Loop once before you hop off so you know the stops.",
+      "Bring a light snack for the ride back.",
+    ],
+    highlights: ["Skyline loop", "Island stop", "Harbor breeze"],
+    goodFor: "Orientation day",
+  },
+  {
+    id: "p-market-hall",
+    name: "Market Hall Lunch",
+    type: "food",
+    source: "lp",
+    neighborhood: "Central Market",
+    duration: "1 hr",
+    price: "$$",
+    bestTime: "Midday",
+    energy: "Easy",
+    hours: "11:00am - 3:00pm",
+    cost: "$10-$18",
+    bookingRequired: "No",
+    headline: "Quick bites, shared tables, and local favorites.",
+    description:
+      "A buzzing hall with rotating stalls. Perfect for a flexible group lunch.",
+    lpNote:
+      "Ideal for groups who want choice without splitting up for too long.",
+    tips: [
+      "Split into pairs and meet at the long tables.",
+      "Go early to avoid the 12:30 rush.",
+    ],
+    communityTips: [
+      "Pick a table first, then order.",
+      "Line up at the noodle stall before noon.",
+    ],
+    highlights: ["Noodle stall", "Fresh juice", "Spice counter"],
+    goodFor: "Groups",
+  },
+  {
+    id: "p-night-market",
+    name: "Night Market Crawl",
+    type: "food",
+    source: "community",
+    neighborhood: "Lantern Row",
+    duration: "2.5 hr",
+    price: "$",
+    bestTime: "Late evening",
+    energy: "Moderate",
+    hours: "6:00pm - 11:00pm",
+    cost: "$5-$12",
+    bookingRequired: "No",
+    headline: "Small plates, bright lights, and slow wandering.",
+    description:
+      "A casual crawl with low stakes. Try three dishes and call it a night.",
+    lpNote:
+      "We keep the list short here so you can wander without the pressure.",
+    tips: [
+      "Bring small cash for quick transactions.",
+      "Pick one sweet stop at the end.",
+    ],
+    communityTips: [
+      "Share everything so you can sample more.",
+      "The grilled skewers sell out after 9pm.",
+    ],
+    highlights: ["Grill alley", "Tea stand", "Dessert row"],
+    goodFor: "Night owls",
+  },
+  {
+    id: "p-art-street",
+    name: "Art Street Galleries",
+    type: "neighborhood",
+    source: "community",
+    neighborhood: "Warehouse District",
+    duration: "2 hr",
+    price: "Free",
+    bestTime: "Afternoon",
+    energy: "Easy",
+    hours: "11:00am - 6:00pm",
+    cost: "Free",
+    bookingRequired: "No",
+    headline: "Studios, small galleries, and murals in one loop.",
+    description:
+      "Open doors and rotating exhibitions. Easy to mix with coffee breaks.",
+    lpNote:
+      "This loop keeps walking easy and pairs well with a long cafe stop.",
+    tips: [
+      "Check the pop up schedule for live demos.",
+      "Most galleries close by 6pm.",
+    ],
+    communityTips: [
+      "Stop at the print shop for small gifts.",
+      "The mural alley is best before sunset.",
+    ],
+    highlights: ["Mural alley", "Studio row", "Print shop"],
+    goodFor: "Creative travelers",
+  },
+  {
+    id: "p-museum-dock",
+    name: "Maritime Museum Dock",
+    type: "attraction",
+    source: "lp",
+    neighborhood: "North Wharf",
+    duration: "1.5 hr",
+    price: "$$",
+    bestTime: "Morning",
+    energy: "Easy",
+    hours: "9:00am - 5:00pm",
+    cost: "$18",
+    bookingRequired: "Recommended",
+    headline: "Stories of the port with hands-on exhibits.",
+    description:
+      "A compact museum with good pacing and a quiet dockside cafe.",
+    lpNote:
+      "A solid indoor stop when you want history without a heavy museum day.",
+    tips: [
+      "Tickets are cheapest before noon.",
+      "Check the top deck for fresh air.",
+    ],
+    communityTips: [
+      "The cafe is quiet between 2-3pm.",
+      "Grab the audio guide if you like short stories.",
+    ],
+    highlights: ["Ship models", "Captain logbook", "Dockside cafe"],
+    goodFor: "Rainy days",
+  },
+  {
+    id: "p-river-kayak",
+    name: "River Kayak Loop",
+    type: "activity",
+    source: "community",
+    neighborhood: "East Bank",
+    duration: "2 hr",
+    price: "$$",
+    bestTime: "Morning",
+    energy: "Active",
+    hours: "8:00am - 2:00pm",
+    cost: "$45",
+    bookingRequired: "Yes",
+    headline: "A calm paddle with skyline views.",
+    description:
+      "Guided kayaks on a gentle loop. A great reset between city walks.",
+    lpNote:
+      "A peaceful water reset that still delivers skyline views.",
+    tips: [
+      "Wear quick-dry layers.",
+      "Lockers are small, pack light.",
+    ],
+    communityTips: [
+      "Pack a dry bag if you have a phone.",
+      "Arrive early to pick a front seat.",
+    ],
+    highlights: ["Floating garden", "Bridge arch", "Quiet inlets"],
+    goodFor: "Active mornings",
+  },
+  {
+    id: "p-hill-temple",
+    name: "Hill Temple Sunrise",
+    type: "attraction",
+    source: "lp",
+    neighborhood: "Hilltop",
+    duration: "1 hr",
+    price: "$",
+    bestTime: "Sunrise",
+    energy: "Moderate",
+    hours: "5:00am - 8:00pm",
+    cost: "$6",
+    bookingRequired: "No",
+    headline: "City views and a calm start to the day.",
+    description:
+      "Short climb, big payoff. Bring a light snack for the steps.",
+    lpNote:
+      "A sunrise here sets the tone for the rest of the day.",
+    tips: [
+      "Arrive 20 minutes before sunrise.",
+      "Wear shoes with grip on the stone stairs.",
+    ],
+    communityTips: [
+      "Bring a small snack for the top.",
+      "The bells ring at 7am on weekdays.",
+    ],
+    highlights: ["Temple steps", "City panorama", "Morning bells"],
+    goodFor: "Early risers",
+  },
+  {
+    id: "p-coffee-roastery",
+    name: "Roastery Tasting Bar",
+    type: "food",
+    source: "community",
+    neighborhood: "Riverside",
+    duration: "45 min",
+    price: "$$",
+    bestTime: "Mid morning",
+    energy: "Easy",
+    hours: "8:00am - 4:00pm",
+    cost: "$8-$15",
+    bookingRequired: "No",
+    headline: "Flights of local roasts with a calm vibe.",
+    description:
+      "A relaxed tasting bar with a short explanation of each roast.",
+    lpNote:
+      "A mellow caffeine stop that keeps you close to the river breeze.",
+    tips: [
+      "Ask for the lighter roast if you have more stops ahead.",
+      "Pick up beans for the next morning.",
+    ],
+    communityTips: [
+      "The patio seats go fast after 10am.",
+      "Order the tasting flight and share.",
+    ],
+    highlights: ["Tasting flight", "Riverside patio", "Biscuit tray"],
+    goodFor: "Coffee fans",
+  },
+];
+
+const CURATED_ITINERARIES = [
+  {
+    id: "lp-harbor-days",
+    title: "Harbor Highlights in 2 Days",
+    type: "curated",
+    pinned: true,
+    author: "Lonely Planet editors",
+    destination: "Harbor City",
+    daysCount: 2,
+    editor: "Alina Ross",
+    credibilityLine:
+      "Field-tested across two seasons with transit and walking updates.",
+    summary: "A balanced mix of views, food, and easy walking.",
+    tags: ["Classic", "First timer", "Balanced pace"],
+    days: [
+      {
+        day: "Day 1",
+        summary: "Ease in with the waterfront and the old quarter.",
+        places: [
+          "p-old-town-walk",
+          "p-market-hall",
+          "p-harbor-viewpoint",
+          "p-museum-dock",
+        ],
+      },
+      {
+        day: "Day 2",
+        summary: "Float the harbor, then end with art and night bites.",
+        places: ["p-ferry-loop", "p-art-street", "p-night-market"],
+      },
+    ],
+    expertNotes:
+      "Start late if you arrive the night before. The order keeps walking distances short.",
+    remixes: [
+      {
+        id: "remix-harbor-slow",
+        title: "Harbor Slow Stroll",
+        author: "Tara M.",
+        trustScore: 4.6,
+        tripCount: 12,
+        saves: 410,
+        completedCount: 55,
+        diffSummary: "+2 places, swapped Day 2",
+      },
+      {
+        id: "remix-harbor-foodie",
+        title: "Harbor Bites Remix",
+        author: "Jin P.",
+        trustScore: 4.4,
+        tripCount: 9,
+        saves: 260,
+        completedCount: 31,
+        diffSummary: "+3 places, added night market",
+      },
+    ],
+  },
+  {
+    id: "lp-active-weekend",
+    title: "Active City Weekend",
+    type: "curated",
+    pinned: true,
+    author: "Lonely Planet editors",
+    destination: "Harbor City",
+    daysCount: 2,
+    editor: "Marcus Lee",
+    credibilityLine:
+      "Updated quarterly with sunrise timings and activity operators.",
+    summary: "For travelers who like motion in the morning.",
+    tags: ["Active", "Outdoors", "Morning energy"],
+    days: [
+      {
+        day: "Day 1",
+        summary: "Water time and a calm breakfast.",
+        places: ["p-river-kayak", "p-coffee-roastery", "p-art-street"],
+      },
+      {
+        day: "Day 2",
+        summary: "Sunrise views with a gentle city loop.",
+        places: ["p-hill-temple", "p-old-town-walk", "p-harbor-viewpoint"],
+      },
+    ],
+    expertNotes:
+      "Swap the morning order if you need a later start. All stops still connect.",
+    remixes: [
+      {
+        id: "remix-active-soft",
+        title: "Active with Slow Mornings",
+        author: "Nia L.",
+        trustScore: 4.7,
+        tripCount: 14,
+        saves: 380,
+        completedCount: 42,
+        diffSummary: "-1 place, swapped Day 1 order",
+      },
+      {
+        id: "remix-active-family",
+        title: "Active Weekend (Family)",
+        author: "Priya R.",
+        trustScore: 4.5,
+        tripCount: 11,
+        saves: 290,
+        completedCount: 36,
+        diffSummary: "+2 places, shorter Day 2",
+      },
+    ],
+  },
+];
+
+const COMMUNITY_ITINERARIES = [
+  {
+    id: "com-late-bites",
+    title: "Late Night Bites and Neon",
+    type: "community",
+    author: "Maya C.",
+    destination: "Harbor City",
+    daysCount: 1,
+    trustScore: 4.6,
+    tripCount: 14,
+    completedCount: 58,
+    saves: 420,
+    summary: "A flexible crawl built for hungry night owls.",
+    tags: ["Night owl", "Budget", "Loose plan"],
+    likes: 348,
+    places: [
+      "p-art-street",
+      "p-night-market",
+      "p-coffee-roastery",
+      "p-harbor-viewpoint",
+    ],
+    notes:
+      "No reservations needed. If the night market is packed, swap with the roastery first.",
+  },
+  {
+    id: "com-story-loop",
+    title: "Neighborhood Storytelling Loop",
+    type: "community",
+    author: "Ravi S.",
+    destination: "Harbor City",
+    daysCount: 2,
+    trustScore: 4.8,
+    remixOf: "Harbor Highlights in 2 Days",
+    tripCount: 11,
+    completedCount: 46,
+    saves: 330,
+    summary: "Slow pacing with time for photos and stories.",
+    tags: ["Photo", "History", "Slow pace"],
+    likes: 212,
+    places: [
+      "p-old-town-walk",
+      "p-museum-dock",
+      "p-market-hall",
+      "p-art-street",
+    ],
+    notes:
+      "I like this with a late lunch. The museum cafe is quiet mid afternoon.",
+  },
+];
+
+const DISCOVER_FILTERS = {
+  length: [
+    { id: "any", label: "Any length" },
+    { id: "short", label: "1-2 days" },
+    { id: "medium", label: "3-4 days" },
+    { id: "long", label: "5+ days" },
+  ],
+  budget: [
+    { id: "any", label: "Any budget" },
+    { id: "budget", label: "Budget" },
+    { id: "mid", label: "Mid-range" },
+    { id: "splurge", label: "Treat" },
+  ],
+  pace: [
+    { id: "any", label: "Any pace" },
+    { id: "slow", label: "Slow" },
+    { id: "balanced", label: "Balanced" },
+    { id: "fast", label: "Fast" },
+  ],
+  interest: [
+    { id: "any", label: "Any interest" },
+    { id: "food", label: "Food" },
+    { id: "culture", label: "Culture" },
+    { id: "outdoors", label: "Outdoors" },
+    { id: "nightlife", label: "Nightlife" },
+    { id: "art", label: "Art" },
+    { id: "family", label: "Family" },
+  ],
+};
+
+const DISCOVER_CURATED = [
+  {
+    id: "lp-slow-harbor",
+    title: "Slow Harbor Weekend",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["slow mornings", "photo walks", "low stress"],
+    type: "curated",
+    pinned: true,
+    author: "Lonely Planet",
+    editor: "Alina Ross",
+    credibilityLine:
+      "Built from editor field notes and updated harbor transit tips.",
+    saves: 1860,
+    length: "short",
+    budget: "mid",
+    pace: "slow",
+    interests: ["culture", "food"],
+    summary: "Gentle pacing with waterfront views and local flavors.",
+    tags: ["Classic", "Slow pace", "First timer"],
+    expertNotes:
+      "The order keeps walking light and builds in cafe time between stops.",
+    remixes: [
+      {
+        id: "remix-slow-weekend",
+        title: "Slow Harbor + Night Bites",
+        author: "Maya C.",
+        trustScore: 4.6,
+        tripCount: 10,
+        saves: 520,
+        completedCount: 48,
+        diffSummary: "+2 places, added night market",
+      },
+    ],
+    days: [
+      {
+        day: "Day 1",
+        summary: "Old quarter strolls and a market lunch.",
+        places: ["p-old-town-walk", "p-market-hall", "p-harbor-viewpoint"],
+      },
+      {
+        day: "Day 2",
+        summary: "Easy art loop and sunset at the pier.",
+        places: ["p-art-street", "p-museum-dock", "p-harbor-viewpoint"],
+      },
+    ],
+  },
+  {
+    id: "lp-food-forward",
+    title: "Food-Forward First Timer",
+    destination: "Harbor City",
+    daysCount: 3,
+    vibes: ["food-forward", "easy walks", "local tastes"],
+    type: "curated",
+    pinned: true,
+    author: "Lonely Planet",
+    editor: "Samira Kline",
+    credibilityLine:
+      "Curated with local chefs and verified opening hours.",
+    saves: 2410,
+    length: "medium",
+    budget: "mid",
+    pace: "balanced",
+    interests: ["food", "culture"],
+    summary: "A curated tasting tour with scenic breaks between bites.",
+    tags: ["Food", "Balanced", "Neighborhoods"],
+    expertNotes:
+      "Keep each meal smaller so you can try more without rushing.",
+    remixes: [
+      {
+        id: "remix-food-night",
+        title: "Food-Forward Nights",
+        author: "Ravi S.",
+        trustScore: 4.7,
+        tripCount: 16,
+        saves: 610,
+        completedCount: 70,
+        diffSummary: "+3 places, swapped Day 2",
+      },
+    ],
+    days: [
+      {
+        day: "Day 1",
+        summary: "Market hall and old quarter snacks.",
+        places: ["p-old-town-walk", "p-market-hall", "p-coffee-roastery"],
+      },
+      {
+        day: "Day 2",
+        summary: "Harbor views with a relaxed lunch.",
+        places: ["p-harbor-viewpoint", "p-ferry-loop", "p-market-hall"],
+      },
+      {
+        day: "Day 3",
+        summary: "Night market finale.",
+        places: ["p-art-street", "p-night-market"],
+      },
+    ],
+  },
+  {
+    id: "lp-sunrise-active",
+    title: "Sunrise + Waterline",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["early starts", "outdoors", "reset energy"],
+    type: "curated",
+    pinned: true,
+    author: "Lonely Planet",
+    editor: "Marcus Lee",
+    credibilityLine:
+      "Activity windows checked weekly for weather and tide shifts.",
+    saves: 1320,
+    length: "short",
+    budget: "splurge",
+    pace: "fast",
+    interests: ["outdoors", "culture"],
+    summary: "Start with sunrise, finish with calm water time.",
+    tags: ["Active", "Morning energy", "Outdoors"],
+    expertNotes:
+      "Swap the kayaking day if weather shifts. Keep the sunrise start.",
+    remixes: [
+      {
+        id: "remix-sunrise-lite",
+        title: "Sunrise Lite",
+        author: "Lena J.",
+        trustScore: 4.5,
+        tripCount: 8,
+        saves: 280,
+        completedCount: 32,
+        diffSummary: "-1 place, slower Day 2",
+      },
+    ],
+    days: [
+      {
+        day: "Day 1",
+        summary: "Sunrise views and old town loop.",
+        places: ["p-hill-temple", "p-old-town-walk", "p-coffee-roastery"],
+      },
+      {
+        day: "Day 2",
+        summary: "Kayak loop and breezy harbor views.",
+        places: ["p-river-kayak", "p-harbor-viewpoint", "p-ferry-loop"],
+      },
+    ],
+  },
+];
+
+const DISCOVER_COMMUNITY = [
+  {
+    id: "com-neon-bites",
+    title: "Neon Nights & Street Bites",
+    destination: "Harbor City",
+    daysCount: 1,
+    vibes: ["late nights", "street food", "loose plan"],
+    type: "community",
+    author: "Kai M.",
+    trustScore: 4.5,
+    tripCount: 9,
+    completedCount: 34,
+    saves: 980,
+    length: "short",
+    budget: "budget",
+    pace: "balanced",
+    interests: ["nightlife", "food"],
+    summary: "A compact evening crawl built for hungry night owls.",
+    tags: ["Night owl", "Budget", "Food"],
+    notes:
+      "I keep this flexible. Grab the ferry loop if you want cooler air.",
+    places: ["p-night-market", "p-harbor-viewpoint", "p-coffee-roastery"],
+  },
+  {
+    id: "com-art-cafe",
+    title: "Art Studios + Coffee Breaks",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["creative", "cafe breaks", "slow chats"],
+    type: "community",
+    author: "Lena J.",
+    trustScore: 4.8,
+    tripCount: 18,
+    completedCount: 72,
+    saves: 1120,
+    length: "short",
+    budget: "mid",
+    pace: "slow",
+    interests: ["art", "culture"],
+    summary: "A relaxed loop for gallery lovers who like to linger.",
+    tags: ["Art", "Slow pace", "Coffee"],
+    notes:
+      "Most galleries close early, so start by noon and linger at the roastery.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Art street and a long coffee stop.",
+        places: ["p-art-street", "p-coffee-roastery"],
+      },
+      {
+        day: "Day 2",
+        summary: "Museum dock and riverside walk.",
+        places: ["p-museum-dock", "p-old-town-walk"],
+      },
+    ],
+  },
+  {
+    id: "com-family-harbor",
+    title: "Family-Friendly Harbor Loop",
+    destination: "Harbor City",
+    daysCount: 2,
+    vibes: ["kid-friendly", "short stops", "easy snacks"],
+    type: "community",
+    author: "Priya R.",
+    trustScore: 4.4,
+    tripCount: 13,
+    completedCount: 41,
+    saves: 860,
+    length: "short",
+    budget: "budget",
+    pace: "slow",
+    interests: ["family", "culture"],
+    summary: "Short hops and snack breaks for younger travelers.",
+    tags: ["Family", "Easy pace", "Snacks"],
+    notes:
+      "We cut each stop to 60-90 minutes and used the ferry for a break.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Museum dock and market hall lunch.",
+        places: ["p-museum-dock", "p-market-hall"],
+      },
+      {
+        day: "Day 2",
+        summary: "Harbor viewpoint and a slow old town stroll.",
+        places: ["p-harbor-viewpoint", "p-old-town-walk"],
+      },
+    ],
+  },
+  {
+    id: "com-rainy-reset",
+    title: "Rainy Day Reset",
+    destination: "Harbor City",
+    daysCount: 1,
+    vibes: ["indoor calm", "slow pace", "warm drinks"],
+    type: "community",
+    author: "Miles T.",
+    trustScore: 4.3,
+    remixOf: "Art Studios + Coffee Breaks",
+    tripCount: 7,
+    completedCount: 29,
+    saves: 640,
+    length: "short",
+    budget: "mid",
+    pace: "slow",
+    interests: ["culture", "art"],
+    summary: "An indoor-first loop for stormy afternoons.",
+    tags: ["Rainy day", "Indoor", "Slow pace"],
+    notes:
+      "I skip the ferry on wet days. The museum cafe is a cozy backup.",
+    places: ["p-museum-dock", "p-art-street", "p-coffee-roastery"],
+  },
+  {
+    id: "com-weekend-remix",
+    title: "Weekend Remix: Mix & Match",
+    destination: "Harbor City",
+    daysCount: 3,
+    vibes: ["flexible", "first timer", "choose your own"],
+    type: "community",
+    author: "Sasha W.",
+    trustScore: 4.9,
+    remixOf: "Food-Forward First Timer",
+    tripCount: 20,
+    completedCount: 88,
+    saves: 1510,
+    length: "medium",
+    budget: "mid",
+    pace: "balanced",
+    interests: ["culture", "food", "outdoors"],
+    summary: "A flexible set of anchor stops with room to wander.",
+    tags: ["Flexible", "Balanced", "First timer"],
+    notes:
+      "Pick one anchor stop per day and fill the rest with whatever you see.",
+    days: [
+      {
+        day: "Day 1",
+        summary: "Old town and harbor views.",
+        places: ["p-old-town-walk", "p-harbor-viewpoint"],
+      },
+      {
+        day: "Day 2",
+        summary: "Water time with a market break.",
+        places: ["p-ferry-loop", "p-market-hall"],
+      },
+      {
+        day: "Day 3",
+        summary: "Art street and a night market finale.",
+        places: ["p-art-street", "p-night-market"],
+      },
+    ],
+  },
+];
+
+const DISCOVER_ITINERARIES = [...DISCOVER_CURATED, ...DISCOVER_COMMUNITY];
+
+const DRAFT_SEED = {
+  id: "draft-1",
+  title: "My weekend draft",
+  type: "community",
+  status: "draft",
+  author: "You",
+  destination: "Harbor City",
+  description:
+    "A flexible draft you can keep shaping with your favorite stops.",
+  visibility: "Private",
+  coverImagePresent: false,
+  summary: "A flexible draft you can keep shaping.",
+  tags: ["Draft", "Private"],
+  places: ["p-old-town-walk", "p-harbor-viewpoint"],
+};
+
+const USER_TRUST_SCORE = 22;
+
+const UI_MODES = [
+  { id: "ready", label: "Ready" },
+  { id: "loading", label: "Loading" },
+  { id: "empty", label: "Empty" },
+  { id: "error", label: "Error" },
+];
+
+const DISCOVER_UI_MODES = UI_MODES.filter((mode) => mode.id !== "error");
+
+const TYPE_FILTERS = [
+  { id: "all", label: "All types" },
+  { id: "curated", label: "Lonely Planet curated" },
+  { id: "community", label: "Community" },
+];
+
+const getPlaceIdsFromItinerary = (itinerary) => {
+  if (itinerary?.days?.length) {
+    return itinerary.days.flatMap((day) => day.places);
+  }
+  return itinerary?.places ?? [];
+};
+
+const buildPlaceMap = () => {
+  const map = {};
+  PLACE_CATALOG.forEach((place) => {
+    map[place.id] = place;
+  });
+  return map;
+};
+
+const chunkIntoDays = (placeIds, chunkSize, summary) => {
+  const days = [];
+  for (let i = 0; i < placeIds.length; i += chunkSize) {
+    const dayNumber = days.length + 1;
+    days.push({
+      day: `Day ${dayNumber}`,
+      summary: summary ?? "Auto-grouped for a balanced pace.",
+      places: placeIds.slice(i, i + chunkSize),
+    });
+  }
+  return days;
+};
+
+const formatSaves = (count) => {
+  if (!count) return "0";
+  if (count >= 1000) {
+    const rounded = (count / 1000).toFixed(1);
+    const trimmed = rounded.endsWith(".0") ? rounded.slice(0, -2) : rounded;
+    return `${trimmed}k`;
+  }
+  return `${count}`;
+};
+
+const getInitials = (name) => {
+  if (!name) return "LP";
+  return name
+    .split(" ")
+    .map((word) => word[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+};
+
+const TIME_BLOCKS = [
+  "8:00 AM",
+  "10:30 AM",
+  "1:00 PM",
+  "3:30 PM",
+  "6:30 PM",
+  "8:30 PM",
+];
+
+const getCommunitySignals = (itinerary) => {
+  const trustScore = itinerary.trustScore ?? 4.5;
+  const tripCount = itinerary.tripCount ?? 0;
+  const completedCount = itinerary.completedCount ?? 0;
+  const saves = itinerary.saves ?? itinerary.likes ?? 0;
+  const verified = completedCount >= 30 && saves >= 200;
+  return { trustScore, tripCount, completedCount, saves, verified };
+};
+
+const getVibeConfig = (vibe) =>
+  VIBE_OPTIONS.find((option) => option.id === vibe) ?? VIBE_OPTIONS[1];
+
+const VIBE_TIME_BLOCKS = {
+  relaxed: ["9:00 AM", "12:00 PM", "3:30 PM", "7:00 PM"],
+  balanced: TIME_BLOCKS,
+  packed: [
+    "7:30 AM",
+    "9:00 AM",
+    "10:15 AM",
+    "11:30 AM",
+    "12:45 PM",
+    "2:00 PM",
+    "3:15 PM",
+    "4:30 PM",
+    "5:45 PM",
+    "7:00 PM",
+  ],
+};
+
+const getVibeTimeBlock = (index, vibe) => {
+  const blocks = VIBE_TIME_BLOCKS[vibe] ?? TIME_BLOCKS;
+  return blocks[index % blocks.length];
+};
+
+const buildVibeDays = (placeIds, vibe) => {
+  const config = getVibeConfig(vibe);
+  return chunkIntoDays(placeIds, config.placesPerDay, config.summary);
+};
+
+const matchesDiscoverFilters = (itinerary, filters, searchTerm) => {
+  const normalized = searchTerm.trim().toLowerCase();
+  if (normalized) {
+    const haystack = [
+      itinerary.title,
+      itinerary.destination,
+      itinerary.summary,
+      ...(itinerary.vibes ?? []),
+      ...(itinerary.tags ?? []),
+    ]
+      .join(" ")
+      .toLowerCase();
+    if (!haystack.includes(normalized)) return false;
+  }
+
+  if (filters.length !== "any" && itinerary.length !== filters.length) {
+    return false;
+  }
+  if (filters.budget !== "any" && itinerary.budget !== filters.budget) {
+    return false;
+  }
+  if (filters.pace !== "any" && itinerary.pace !== filters.pace) {
+    return false;
+  }
+  if (
+    filters.interest !== "any" &&
+    !itinerary.interests?.includes(filters.interest)
+  ) {
+    return false;
+  }
+  return true;
+};
+
+export default function App() {
+  const [history, setHistory] = useState([{ name: "home" }]);
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [discoverSearch, setDiscoverSearch] = useState("");
+  const [discoverFilters, setDiscoverFilters] = useState({
+    length: "any",
+    budget: "any",
+    pace: "any",
+    interest: "any",
+  });
+  const [uiMode, setUiMode] = useState("ready");
+  const [toast, setToast] = useState("");
+  const [draftPlaces, setDraftPlaces] = useState(DRAFT_SEED.places);
+  const [draftTitle, setDraftTitle] = useState(DRAFT_SEED.title);
+  const [draftDescription, setDraftDescription] = useState(
+    DRAFT_SEED.description
+  );
+  const [draftVisibility, setDraftVisibility] = useState(
+    DRAFT_SEED.visibility
+  );
+  const [coverImagePresent, setCoverImagePresent] = useState(
+    DRAFT_SEED.coverImagePresent
+  );
+  const [draftVibe, setDraftVibe] = useState("balanced");
+  const [draftPlaceNotes, setDraftPlaceNotes] = useState({});
+  const [draftDayNotes, setDraftDayNotes] = useState({});
+  const [publishStatus, setPublishStatus] = useState("Draft");
+  const [groupDraftByDay, setGroupDraftByDay] = useState(true);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = setTimeout(() => setToast(""), 2200);
+    return () => clearTimeout(timer);
+  }, [toast]);
+
+  const route = history[history.length - 1];
+  const navigate = (next) => setHistory((prev) => [...prev, next]);
+  const goBack = () =>
+    setHistory((prev) => (prev.length > 1 ? prev.slice(0, -1) : prev));
+  const goHome = () => setHistory([{ name: "home" }]);
+
+  const placeMap = useMemo(buildPlaceMap, []);
+
+  const draftItinerary = useMemo(
+    () => ({
+      ...DRAFT_SEED,
+      title: draftTitle,
+      description: draftDescription,
+      visibility: draftVisibility,
+      coverImagePresent,
+      vibe: draftVibe,
+      places: draftPlaces,
+    }),
+    [
+      draftTitle,
+      draftDescription,
+      draftVisibility,
+      coverImagePresent,
+      draftVibe,
+      draftPlaces,
+    ]
+  );
+
+  const homeItineraries = useMemo(
+    () => [...CURATED_ITINERARIES, ...COMMUNITY_ITINERARIES, draftItinerary],
+    [draftItinerary]
+  );
+
+  const allItineraries = useMemo(
+    () => [...homeItineraries, ...DISCOVER_ITINERARIES],
+    [homeItineraries]
+  );
+
+  const normalizedSearch = search.trim().toLowerCase();
+
+  const filteredItineraries = useMemo(() => {
+    let items = homeItineraries;
+    if (typeFilter !== "all") {
+      items = items.filter((item) => item.type === typeFilter);
+    }
+    if (normalizedSearch) {
+      items = items.filter((item) => {
+        const haystack = [
+          item.title,
+          item.summary,
+          item.author,
+          ...(item.tags ?? []),
+        ]
+          .join(" ")
+          .toLowerCase();
+        return haystack.includes(normalizedSearch);
+      });
+    }
+    return items;
+  }, [homeItineraries, typeFilter, normalizedSearch]);
+
+  const discoverResults = useMemo(() => {
+    const filtered = DISCOVER_ITINERARIES.filter((itinerary) =>
+      matchesDiscoverFilters(itinerary, discoverFilters, discoverSearch)
+    );
+    return {
+      curated: filtered.filter((item) => item.type === "curated"),
+      community: filtered.filter((item) => item.type === "community"),
+      total: filtered.length,
+    };
+  }, [discoverFilters, discoverSearch]);
+
+  const featuredPlaces = PLACE_CATALOG.slice(0, 6);
+
+  const activeItinerary = useMemo(
+    () =>
+      route?.itineraryId
+        ? allItineraries.find((item) => item.id === route.itineraryId)
+        : null,
+    [allItineraries, route?.itineraryId]
+  );
+
+  const activePlace = useMemo(
+    () =>
+      route?.placeId
+        ? PLACE_CATALOG.find((place) => place.id === route.placeId)
+        : null,
+    [route?.placeId]
+  );
+
+  const addPlaceToDraft = (placeId) => {
+    if (draftPlaces.includes(placeId)) {
+      setToast("Already in your draft.");
+      return;
+    }
+    setDraftPlaces((prev) => [...prev, placeId]);
+    setToast("Added to your draft.");
+  };
+
+  const removePlaceFromDraft = (placeId) => {
+    setDraftPlaces((prev) => prev.filter((id) => id !== placeId));
+    setToast("Removed from your draft.");
+  };
+
+  const movePlaceInDraft = (fromIndex, direction) => {
+    setDraftPlaces((prev) => {
+      const nextIndex = fromIndex + direction;
+      if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+      const updated = [...prev];
+      const [moved] = updated.splice(fromIndex, 1);
+      updated.splice(nextIndex, 0, moved);
+      return updated;
+    });
+  };
+
+  const remixItinerary = (itinerary) => {
+    const placeIds = getPlaceIdsFromItinerary(itinerary);
+    if (placeIds.length === 0) {
+      setToast("No places to remix yet.");
+      return;
+    }
+    setDraftPlaces(placeIds);
+    setDraftTitle(`Remix of ${itinerary.title}`);
+    setDraftDescription(itinerary.summary ?? "");
+    setDraftVisibility("Private");
+    setCoverImagePresent(false);
+    setDraftVibe("balanced");
+    setDraftPlaceNotes({});
+    setDraftDayNotes({});
+    setPublishStatus("Draft");
+    setGroupDraftByDay(Boolean(itinerary?.days?.length));
+    setToast("Remix ready in your editor.");
+    navigate({ name: "editor" });
+  };
+
+  const draftDayGroups = useMemo(() => {
+    if (!groupDraftByDay) return [];
+    return buildVibeDays(draftPlaces, draftVibe);
+  }, [draftPlaces, groupDraftByDay, draftVibe]);
+
+  return (
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <div className="mx-auto flex min-h-screen max-w-6xl flex-col px-6 py-6">
+        <header className="border-b border-slate-800 pb-6">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div className="space-y-2">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Lonely Planet prototype
+              </p>
+              <div>
+                <h1 className="text-2xl font-semibold">Itinerary Types Lab</h1>
+                <p className="text-sm text-slate-400">
+                  Clickable prototype with mock data only. No backend.
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={goHome}
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  route.name === "home"
+                    ? "border-slate-500 bg-slate-800 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                Explore
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate({ name: "discover" })}
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  route.name === "discover"
+                    ? "border-indigo-400/60 bg-indigo-500/20 text-indigo-200"
+                    : "border-indigo-400/40 text-indigo-200 hover:border-indigo-300"
+                }`}
+              >
+                Discover
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate({ name: "editor" })}
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  route.name === "editor"
+                    ? "border-emerald-400/60 bg-emerald-500/20 text-emerald-200"
+                    : "border-emerald-400/40 text-emerald-200 hover:border-emerald-300"
+                }`}
+              >
+                Editor
+              </button>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-400">
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              Places: {PLACE_CATALOG.length}
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              Itineraries: {allItineraries.length}
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              Draft: {draftPlaces.length} places
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              Route: {route.name}
+            </span>
+          </div>
+          {route.name !== "home" && (
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={goBack}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+              >
+                Back
+              </button>
+              <button
+                type="button"
+                onClick={goHome}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+              >
+                Home
+              </button>
+              <p className="text-xs text-slate-500">
+                State-based routing. No external router used.
+              </p>
+            </div>
+          )}
+        </header>
+
+        {route.name === "home" && (
+          <HomeScreen
+            uiMode={uiMode}
+            setUiMode={setUiMode}
+            search={search}
+            setSearch={setSearch}
+            typeFilter={typeFilter}
+            setTypeFilter={setTypeFilter}
+            filteredItineraries={filteredItineraries}
+            onOpenItinerary={(id) =>
+              navigate({ name: "itinerary", itineraryId: id })
+            }
+            placeMap={placeMap}
+            featuredPlaces={featuredPlaces}
+            onOpenPlace={(id) => navigate({ name: "place", placeId: id })}
+            onAddToDraft={addPlaceToDraft}
+            draftItinerary={draftItinerary}
+          />
+        )}
+
+        {route.name === "discover" && (
+          <DiscoverScreen
+            uiMode={uiMode}
+            setUiMode={setUiMode}
+            search={discoverSearch}
+            setSearch={setDiscoverSearch}
+            filters={discoverFilters}
+            setFilters={setDiscoverFilters}
+            curatedItineraries={discoverResults.curated}
+            communityItineraries={discoverResults.community}
+            totalResults={discoverResults.total}
+            onOpenItinerary={(id) =>
+              navigate({ name: "itinerary", itineraryId: id })
+            }
+          />
+        )}
+
+        {route.name === "itinerary" && (
+          <ItineraryScreen
+            uiMode={uiMode}
+            itinerary={activeItinerary}
+            placeMap={placeMap}
+            onOpenPlace={(id) =>
+              navigate({
+                name: "place",
+                placeId: id,
+                source: "itinerary",
+                itineraryId: route.itineraryId,
+              })
+            }
+            onGoHome={goHome}
+            onRemix={remixItinerary}
+            onToast={setToast}
+          />
+        )}
+
+        {route.name === "place" && (
+          <PlaceScreen
+            uiMode={uiMode}
+            place={activePlace}
+            inDraft={draftPlaces.includes(route.placeId)}
+            onAddToDraft={addPlaceToDraft}
+            onRemoveFromDraft={removePlaceFromDraft}
+            onOpenPlace={(id) => navigate({ name: "place", placeId: id })}
+            onSaveForLater={() => setToast("Saved for later.")}
+          />
+        )}
+
+        {route.name === "editor" && (
+          <EditorScreen
+            draftTitle={draftTitle}
+            setDraftTitle={setDraftTitle}
+            draftDescription={draftDescription}
+            setDraftDescription={setDraftDescription}
+            draftVisibility={draftVisibility}
+            setDraftVisibility={setDraftVisibility}
+            coverImagePresent={coverImagePresent}
+            setCoverImagePresent={setCoverImagePresent}
+            draftVibe={draftVibe}
+            setDraftVibe={setDraftVibe}
+            draftPlaces={draftPlaces}
+            placeMap={placeMap}
+            groupDraftByDay={groupDraftByDay}
+            setGroupDraftByDay={setGroupDraftByDay}
+            draftDayGroups={draftDayGroups}
+            draftPlaceNotes={draftPlaceNotes}
+            setDraftPlaceNotes={setDraftPlaceNotes}
+            draftDayNotes={draftDayNotes}
+            setDraftDayNotes={setDraftDayNotes}
+            publishStatus={publishStatus}
+            setPublishStatus={setPublishStatus}
+            userTrustScore={USER_TRUST_SCORE}
+            onMovePlace={movePlaceInDraft}
+            onOpenPlace={(id) => navigate({ name: "place", placeId: id })}
+            onRemoveFromDraft={removePlaceFromDraft}
+            onAddPlace={addPlaceToDraft}
+            onBrowsePlaces={() => navigate({ name: "home" })}
+            onPreviewDraft={() =>
+              navigate({ name: "itinerary", itineraryId: DRAFT_SEED.id })
+            }
+            onToast={setToast}
+          />
+        )}
+      </div>
+
+      {toast && (
+        <div className="fixed bottom-6 right-6 rounded-2xl border border-slate-700 bg-slate-900 px-4 py-3 text-sm text-slate-200 shadow-lg">
+          {toast}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HomeScreen({
+  uiMode,
+  setUiMode,
+  search,
+  setSearch,
+  typeFilter,
+  setTypeFilter,
+  filteredItineraries,
+  onOpenItinerary,
+  placeMap,
+  featuredPlaces,
+  onOpenPlace,
+  onAddToDraft,
+  draftItinerary,
+}) {
+  const showEmpty =
+    uiMode === "empty" || (uiMode === "ready" && filteredItineraries.length === 0);
+
+  return (
+    <div className="mt-8 grid gap-6 lg:grid-cols-[2fr_1fr]">
+      <div className="space-y-6">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-semibold">Pick your starting point</h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Curated itineraries are sequenced by experts. Community
+                itineraries are flexible and personal.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onOpenItinerary(draftItinerary.id)}
+              className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
+            >
+              Continue your draft
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex min-w-[240px] flex-1 items-center rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200">
+              <span className="mr-2 text-slate-500">Search</span>
+              <input
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Try 'night' or 'classic'"
+                className="w-full bg-transparent text-sm text-slate-200 outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setSearch("")}
+              className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+            >
+              Clear
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            {TYPE_FILTERS.map((filter) => (
+              <button
+                key={filter.id}
+                type="button"
+                onClick={() => setTypeFilter(filter.id)}
+                className={`rounded-full border px-3 py-1 text-xs transition ${
+                  typeFilter === filter.id
+                    ? "border-slate-500 bg-slate-800 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                {filter.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">
+            Filters change what appears below. They do not edit data.
+          </p>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold">Itineraries</h3>
+            <p className="text-xs text-slate-500">
+              Ordered lists of Places, optionally grouped into days.
+            </p>
+          </div>
+
+          {uiMode === "loading" && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {[0, 1, 2, 3].map((index) => (
+                <SkeletonCard key={`sk-${index}`} />
+              ))}
+            </div>
+          )}
+
+          {uiMode === "error" && (
+            <ErrorState
+              title="Itineraries failed to load"
+              description="This prototype is offline. Try switching to Ready mode."
+              actionLabel="Switch to Ready"
+              onAction={() => setUiMode("ready")}
+            />
+          )}
+
+          {showEmpty && (
+            <EmptyState
+              title="No itineraries match yet"
+              description="Try clearing filters or searching for a different vibe."
+              actionLabel="Reset filters"
+              onAction={() => {
+                setSearch("");
+                setTypeFilter("all");
+                setUiMode("ready");
+              }}
+            />
+          )}
+
+          {uiMode === "ready" && filteredItineraries.length > 0 && (
+            <div className="grid gap-4 md:grid-cols-2">
+              {filteredItineraries.map((itinerary) => (
+                <ItineraryCard
+                  key={itinerary.id}
+                  itinerary={itinerary}
+                  placeMap={placeMap}
+                  onOpen={() => onOpenItinerary(itinerary.id)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section className="space-y-4 rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold">Places to drop in</h3>
+            <p className="text-xs text-slate-500">
+              Add to your draft without leaving this screen.
+            </p>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            {featuredPlaces.map((place) => (
+              <PlaceMiniCard
+                key={place.id}
+                place={place}
+                onOpen={() => onOpenPlace(place.id)}
+                onAdd={() => onAddToDraft(place.id)}
+              />
+            ))}
+          </div>
+        </section>
+      </div>
+
+      <aside className="space-y-6">
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">
+            Prototype states
+          </h3>
+          <p className="mt-3 text-sm text-slate-400">
+            Toggle UI states to validate copy and layout. No data is lost.
+          </p>
+          <div className="mt-4 grid gap-2">
+            {UI_MODES.map((mode) => (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setUiMode(mode.id)}
+                className={`rounded-xl border px-4 py-2 text-left text-sm transition ${
+                  uiMode === mode.id
+                    ? "border-amber-400/50 bg-amber-500/10 text-amber-100"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                <div className="font-semibold">{mode.label}</div>
+                <div className="text-xs text-slate-500">
+                  {mode.id === "ready" &&
+                    "Real mock data is visible and clickable."}
+                  {mode.id === "loading" &&
+                    "Shows skeletons to test waiting states."}
+                  {mode.id === "empty" &&
+                    "Shows zero results and empty microcopy."}
+                  {mode.id === "error" &&
+                    "Shows error and recovery messaging."}
+                </div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <h3 className="text-lg font-semibold">Your draft snapshot</h3>
+          <p className="mt-2 text-sm text-slate-400">
+            A private community itinerary. Share only when it feels ready.
+          </p>
+          <div className="mt-4 space-y-3">
+            <div className="rounded-xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Draft title
+              </div>
+              <div className="mt-1 font-semibold">{draftItinerary.title}</div>
+            </div>
+            <div className="rounded-xl border border-slate-700 px-4 py-3 text-sm text-slate-200">
+              <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Places
+              </div>
+              <div className="mt-1 font-semibold">
+                {draftItinerary.places.length}
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenItinerary(draftItinerary.id)}
+            className="mt-4 w-full rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
+          >
+            Preview draft itinerary
+          </button>
+        </section>
+
+        <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+          <h3 className="text-lg font-semibold">Two itinerary types</h3>
+          <div className="mt-4 space-y-4 text-sm text-slate-400">
+            <div>
+              <Badge tone="curated">Lonely Planet curated</Badge>
+              <p className="mt-2">
+                Expert sequencing, pacing, and practical notes baked in.
+              </p>
+            </div>
+            <div>
+              <Badge tone="community">Community</Badge>
+              <p className="mt-2">
+                Personal stories and flexible ordering. Great for discovery.
+              </p>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  );
+}
+
+function DiscoverScreen({
+  uiMode,
+  setUiMode,
+  search,
+  setSearch,
+  filters,
+  setFilters,
+  curatedItineraries,
+  communityItineraries,
+  totalResults,
+  onOpenItinerary,
+}) {
+  const showEmpty =
+    uiMode === "empty" || (uiMode === "ready" && totalResults === 0);
+
+  const updateFilter = (key, value) =>
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }));
+
+  const resetFilters = () =>
+    setFilters({
+      length: "any",
+      budget: "any",
+      pace: "any",
+      interest: "any",
+    });
+
+  return (
+    <div className="mt-8 space-y-6">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Discover itineraries</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Start with a vibe, then narrow by trip length, budget, and pace.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              {totalResults} matches
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              {curatedItineraries.length} curated
+            </span>
+            <span className="rounded-full border border-slate-700 px-3 py-1">
+              {communityItineraries.length} community
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-3">
+          <div className="flex min-w-[240px] flex-1 items-center rounded-full border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-200">
+            <span className="mr-2 text-slate-500">Search</span>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search destinations, vibes, or names"
+              className="w-full bg-transparent text-sm text-slate-200 outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+          >
+            Clear search
+          </button>
+        </div>
+
+        <div className="mt-5 grid gap-4 lg:grid-cols-4">
+          <FilterGroup
+            label="Trip length"
+            options={DISCOVER_FILTERS.length}
+            value={filters.length}
+            onChange={(value) => updateFilter("length", value)}
+          />
+          <FilterGroup
+            label="Budget"
+            options={DISCOVER_FILTERS.budget}
+            value={filters.budget}
+            onChange={(value) => updateFilter("budget", value)}
+          />
+          <FilterGroup
+            label="Pace"
+            options={DISCOVER_FILTERS.pace}
+            value={filters.pace}
+            onChange={(value) => updateFilter("pace", value)}
+          />
+          <FilterGroup
+            label="Interests"
+            options={DISCOVER_FILTERS.interest}
+            value={filters.interest}
+            onChange={(value) => updateFilter("interest", value)}
+          />
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-500">
+          <p>Filters only affect this screen. No edits are saved.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setSearch("");
+              resetFilters();
+              setUiMode("ready");
+            }}
+            className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+          >
+            Reset filters
+          </button>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              UI state
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              Switch to preview loading and empty messaging.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {DISCOVER_UI_MODES.map((mode) => (
+              <button
+                key={mode.id}
+                type="button"
+                onClick={() => setUiMode(mode.id)}
+                className={`rounded-full border px-3 py-1 text-xs transition ${
+                  uiMode === mode.id
+                    ? "border-amber-400/50 bg-amber-500/10 text-amber-100"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {uiMode === "loading" && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {[0, 1, 2, 3, 4, 5].map((index) => (
+            <SkeletonCard key={`discover-sk-${index}`} />
+          ))}
+        </div>
+      )}
+
+      {uiMode === "error" && (
+        <ErrorState
+          title="Discover is temporarily offline"
+          description="This prototype is running locally. Switch back to Ready."
+          actionLabel="Switch to Ready"
+          onAction={() => setUiMode("ready")}
+        />
+      )}
+
+      {showEmpty && (
+        <EmptyState
+          title="No itineraries match your filters"
+          description="Try widening your trip length or clearing your search."
+          actionLabel="Clear filters"
+          onAction={() => {
+            setSearch("");
+            resetFilters();
+            setUiMode("ready");
+          }}
+        />
+      )}
+
+      {uiMode === "ready" && totalResults > 0 && (
+        <div className="space-y-6">
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold">
+                Curated by Lonely Planet
+              </h3>
+              <span className="text-xs text-slate-500">
+                {curatedItineraries.length} itineraries
+              </span>
+            </div>
+            <p className="text-sm text-slate-400">
+              Expert sequencing, pacing notes, and practical tips included.
+            </p>
+            {curatedItineraries.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-sm text-slate-400">
+                No curated itineraries match this filter set yet.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {curatedItineraries.map((itinerary) => (
+                  <DiscoverItineraryCard
+                    key={itinerary.id}
+                    itinerary={itinerary}
+                    onOpen={() => onOpenItinerary(itinerary.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+
+          <section className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 className="text-lg font-semibold">From the community</h3>
+              <span className="text-xs text-slate-500">
+                {communityItineraries.length} itineraries
+              </span>
+            </div>
+            <p className="text-sm text-slate-400">
+              Personal routes with flexible pacing and lots of remix potential.
+            </p>
+            {communityItineraries.length === 0 ? (
+              <p className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-sm text-slate-400">
+                No community itineraries match this filter set yet.
+              </p>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {communityItineraries.map((itinerary) => (
+                  <DiscoverItineraryCard
+                    key={itinerary.id}
+                    itinerary={itinerary}
+                    onOpen={() => onOpenItinerary(itinerary.id)}
+                  />
+                ))}
+              </div>
+            )}
+          </section>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FilterGroup({ label, options, value, onChange }) {
+  return (
+    <div className="space-y-2">
+      <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+        {label}
+      </p>
+      <div className="flex flex-wrap gap-2">
+        {options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => onChange(option.id)}
+            className={`rounded-full border px-3 py-1 text-xs transition ${
+              value === option.id
+                ? "border-slate-500 bg-slate-800 text-white"
+                : "border-slate-700 text-slate-300 hover:border-slate-500"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function DiscoverItineraryCard({ itinerary, onOpen }) {
+  const daysCount = itinerary.days?.length ?? itinerary.daysCount ?? 0;
+  const daysLabel = `${daysCount} day${daysCount === 1 ? "" : "s"}`;
+  const isCurated = itinerary.type === "curated";
+  const isPinned = Boolean(itinerary.pinned && isCurated);
+  const communitySignals = getCommunitySignals(itinerary);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`group rounded-2xl border p-5 text-left transition hover:border-slate-500 ${
+        isPinned
+          ? "border-amber-400/50 bg-amber-500/10"
+          : "border-slate-800 bg-slate-900/40"
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isPinned && <Badge tone="pinned">Pinned</Badge>}
+          <Badge tone={isCurated ? "curated" : "community"}>
+            {isCurated ? "LP Curated" : "Community"}
+          </Badge>
+        </div>
+        <span className="text-xs text-slate-500">
+          {formatSaves(itinerary.saves)} saves
+        </span>
+      </div>
+      <h4 className="mt-3 text-lg font-semibold group-hover:text-white">
+        {itinerary.title}
+      </h4>
+      <p className="mt-2 text-sm text-slate-400">
+        {itinerary.destination} • {daysLabel}
+      </p>
+      <p className="mt-3 text-sm text-slate-400">{itinerary.summary}</p>
+      {!isCurated && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span>Trust {communitySignals.trustScore.toFixed(1)}/5</span>
+          <span className="text-slate-600">•</span>
+          <span>{communitySignals.tripCount} trips</span>
+          {communitySignals.verified && <Badge tone="verified">Verified</Badge>}
+        </div>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(itinerary.vibes ?? []).map((tag) => (
+          <Badge key={tag} tone="subtle">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    </button>
+  );
+}
+
+function RemixCard({ remix }) {
+  const signals = getCommunitySignals(remix);
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <div className="text-sm font-semibold text-slate-100">
+            {remix.title}
+          </div>
+          <div className="mt-1 text-xs text-slate-500">by {remix.author}</div>
+        </div>
+        <Badge tone="community">Community</Badge>
+      </div>
+      <p className="mt-3 text-sm text-slate-400">{remix.diffSummary}</p>
+      <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        <span>Trust {signals.trustScore.toFixed(1)}/5</span>
+        <span className="text-slate-600">•</span>
+        <span>{signals.tripCount} trips</span>
+        {signals.verified && <Badge tone="verified">Verified</Badge>}
+      </div>
+    </div>
+  );
+}
+
+function VibeToggle({ value, onChange }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {VIBE_OPTIONS.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          onClick={() => onChange(option.id)}
+          className={`rounded-full border px-3 py-1 text-xs transition ${
+            value === option.id
+              ? "border-slate-500 bg-slate-800 text-white"
+              : "border-slate-700 text-slate-300 hover:border-slate-500"
+          }`}
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function ItineraryScreen({
+  uiMode,
+  itinerary,
+  placeMap,
+  onOpenPlace,
+  onGoHome,
+  onRemix,
+  onToast,
+}) {
+  const [saved, setSaved] = useState(false);
+  const [detailTab, setDetailTab] = useState("original");
+  const [detailVibe, setDetailVibe] = useState("balanced");
+
+  useEffect(() => {
+    setDetailTab("original");
+    setDetailVibe("balanced");
+  }, [itinerary?.id]);
+
+  if (uiMode === "loading") {
+    return (
+      <div className="mt-8">
+        <SkeletonPanel />
+      </div>
+    );
+  }
+
+  if (uiMode === "error") {
+    return (
+      <div className="mt-8">
+        <ErrorState
+          title="Itinerary failed to load"
+          description="Try switching to Ready mode or head back home."
+          actionLabel="Go home"
+          onAction={onGoHome}
+        />
+      </div>
+    );
+  }
+
+  if (!itinerary) {
+    return (
+      <div className="mt-8">
+        <ErrorState
+          title="Itinerary not found"
+          description="Try opening a different itinerary from the list."
+        />
+      </div>
+    );
+  }
+
+  const placeIds = getPlaceIdsFromItinerary(itinerary);
+  const isCurated = itinerary.type === "curated";
+  const isDraft = itinerary.status === "draft";
+  const isPinned = Boolean(itinerary.pinned && isCurated);
+  const dayGroups =
+    detailVibe === "balanced" && itinerary?.days?.length
+      ? itinerary.days
+      : buildVibeDays(placeIds, detailVibe);
+  const daysCount = dayGroups.length;
+  const destination = itinerary.destination ?? "Harbor City";
+  const daysLabel = `${daysCount} day${daysCount === 1 ? "" : "s"}`;
+  const editor = itinerary.editor ?? "LP Editorial Team";
+  const credibilityLine =
+    itinerary.credibilityLine ?? "Field-tested by Lonely Planet editors.";
+  const authorName =
+    itinerary.author ?? (isCurated ? "Lonely Planet" : "Community");
+  const communitySignals = getCommunitySignals(itinerary);
+
+  const handleSave = () => {
+    const nextSaved = !saved;
+    setSaved(nextSaved);
+    if (onToast) {
+      onToast(nextSaved ? "Saved to your list." : "Removed from saved.");
+    }
+  };
+
+  const handleDownload = () => {
+    if (onToast) onToast("Offline pack queued.");
+  };
+
+  const handleShare = () => {
+    if (onToast) onToast("Share link copied.");
+  };
+
+  if (uiMode === "empty" || placeIds.length === 0) {
+    return (
+      <div className="mt-8">
+        <EmptyState
+          title="No places yet"
+          description="This itinerary is waiting for places. Try another route or remix it."
+          actionLabel="Remix this itinerary"
+          onAction={() => onRemix(itinerary)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-8 space-y-6">
+      <section
+        className={`overflow-hidden rounded-3xl border ${
+          isPinned
+            ? "border-amber-400/50 bg-amber-500/10"
+            : "border-slate-800 bg-slate-900/40"
+        }`}
+      >
+        <div className="relative h-40 bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(99,102,241,0.25),_transparent_55%)]" />
+          <div className="absolute inset-0 flex items-center justify-between px-6 text-xs text-slate-400">
+            <span>Hero image preview</span>
+            <span>Prototype only</span>
+          </div>
+        </div>
+        <div className="space-y-4 p-6">
+          <div className="flex flex-wrap items-center gap-2">
+            {isPinned && <Badge tone="pinned">Pinned</Badge>}
+            <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
+              {isDraft
+                ? "Community draft"
+                : isCurated
+                ? "Lonely Planet curated"
+                : "Community itinerary"}
+            </Badge>
+            <Badge tone="subtle">{destination}</Badge>
+            <Badge tone="subtle">{daysLabel}</Badge>
+          </div>
+          <div>
+            <h2 className="text-2xl font-semibold">{itinerary.title}</h2>
+            <p className="mt-2 text-sm text-slate-400">{itinerary.summary}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {(itinerary.tags ?? itinerary.vibes ?? []).map((tag) => (
+              <Badge key={tag} tone="subtle">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            {isCurated ? (
+              <div className="space-y-3">
+                <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                  Curated by Lonely Planet
+                </p>
+                <div className="text-lg font-semibold text-slate-100">
+                  {editor}
+                </div>
+                <p className="text-sm text-slate-400">{credibilityLine}</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-700 bg-slate-950 text-sm font-semibold text-slate-200">
+                    {getInitials(authorName)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-slate-100">
+                      {authorName}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Trust {communitySignals.trustScore.toFixed(1)}/5 •{" "}
+                      {communitySignals.tripCount} trips
+                    </p>
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400">
+                  {itinerary.remixOf
+                    ? `Remix of ${itinerary.remixOf}`
+                    : "Original community route"}
+                </p>
+                {communitySignals.verified && (
+                  <div>
+                    <Badge tone="verified">Verified</Badge>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                Vibe
+              </p>
+              <VibeToggle value={detailVibe} onChange={setDetailVibe} />
+            </div>
+            <p className="text-xs text-slate-500">
+              {getVibeConfig(detailVibe).summary}
+            </p>
+          </div>
+
+          {isCurated && (
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setDetailTab("original")}
+                className={`rounded-full border px-4 py-2 text-xs transition ${
+                  detailTab === "original"
+                    ? "border-slate-500 bg-slate-800 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                Original
+              </button>
+              <button
+                type="button"
+                onClick={() => setDetailTab("remixes")}
+                className={`rounded-full border px-4 py-2 text-xs transition ${
+                  detailTab === "remixes"
+                    ? "border-slate-500 bg-slate-800 text-white"
+                    : "border-slate-700 text-slate-300 hover:border-slate-500"
+                }`}
+              >
+                Remixes
+              </button>
+              <span className="text-xs text-slate-500">
+                Community remixes show how travelers adapted the plan.
+              </span>
+            </div>
+          )}
+
+          {(!isCurated || detailTab === "original") && (
+            <div className="space-y-4">
+              {dayGroups.map((day, dayIndex) => (
+                <div
+                  key={day.day ?? `day-${dayIndex + 1}`}
+                  className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h3 className="text-lg font-semibold">
+                      {day.day ?? `Day ${dayIndex + 1}`}
+                    </h3>
+                    <span className="text-xs text-slate-500">
+                      {day.places.length} places
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-400">
+                    {day.summary ?? "Balanced pacing with room to wander."}
+                  </p>
+                  <div className="mt-4 space-y-4">
+                    {day.places.map((placeId, index) => (
+                      <TimelinePlaceCard
+                        key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
+                        place={placeMap[placeId]}
+                        order={index + 1}
+                      timeBlock={getVibeTimeBlock(index, detailVibe)}
+                        onOpen={() => onOpenPlace(placeId)}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {isCurated && detailTab === "remixes" && (
+            <div className="space-y-4">
+              {(itinerary.remixes ?? []).length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-6 text-sm text-slate-400">
+                  No remixes yet. Be the first to remix this itinerary.
+                </div>
+              ) : (
+                (itinerary.remixes ?? []).map((remix) => (
+                  <RemixCard key={remix.id} remix={remix} />
+                ))
+              )}
+            </div>
+          )}
+        </section>
+
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Actions
+            </p>
+            <div className="mt-4 space-y-2">
+              <button
+                type="button"
+                onClick={handleSave}
+                className="w-full rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
+              >
+                {saved ? "Saved" : "Save"}
+              </button>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="w-full rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+              >
+                Download offline
+              </button>
+              <button
+                type="button"
+                onClick={() => onRemix(itinerary)}
+                className="w-full rounded-full border border-indigo-400/40 px-4 py-2 text-sm text-indigo-200 hover:border-indigo-300"
+              >
+                Remix this itinerary
+              </button>
+              <button
+                type="button"
+                onClick={handleShare}
+                className="w-full rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+              >
+                Share
+              </button>
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Actions are mocked for prototype validation.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Map preview
+            </p>
+            <div className="mt-4 h-40 rounded-xl border border-dashed border-slate-700 bg-slate-950/60">
+              <div className="flex h-full items-center justify-center text-xs text-slate-500">
+                Map pins follow the itinerary order.
+              </div>
+            </div>
+            <div className="mt-4 space-y-2 text-xs text-slate-400">
+              {placeIds.map((placeId, index) => (
+                <div key={`map-${placeId}`} className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-700 text-[10px] text-slate-400">
+                    {index + 1}
+                  </span>
+                  <span>{placeMap[placeId]?.name ?? "Place"}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Notes
+            </p>
+            <p className="mt-3 text-sm text-slate-400">
+              {isCurated
+                ? "Curated itineraries include pacing logic and practical tips."
+                : "Community itineraries are flexible and meant for remixing."}
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function PlaceScreen({
+  uiMode,
+  place,
+  inDraft,
+  onAddToDraft,
+  onRemoveFromDraft,
+  onOpenPlace,
+  onSaveForLater,
+}) {
+  if (uiMode === "loading") {
+    return (
+      <div className="mt-8">
+        <SkeletonPanel />
+      </div>
+    );
+  }
+
+  if (uiMode === "error") {
+    return (
+      <div className="mt-8">
+        <ErrorState
+          title="Place failed to load"
+          description="Try returning to the list and reopening the place."
+        />
+      </div>
+    );
+  }
+
+  if (!place || uiMode === "empty") {
+    return (
+      <div className="mt-8">
+        <EmptyState
+          title="This place is not ready yet"
+          description="Switch back to Ready mode to see the full details."
+        />
+      </div>
+    );
+  }
+
+  const similarPlaces = PLACE_CATALOG.filter(
+    (item) =>
+      item.id !== place.id &&
+      (item.type === place.type || item.neighborhood === place.neighborhood)
+  ).slice(0, 3);
+
+  return (
+    <div className="mt-8 space-y-6">
+      <section className="rounded-3xl border border-slate-800 bg-slate-900/40 p-6">
+        <div className="flex gap-3 overflow-x-auto pb-2">
+          {[1, 2, 3].map((index) => (
+            <div
+              key={`image-${index}`}
+              className="min-w-[220px] flex-1 rounded-2xl border border-slate-700 bg-slate-950/60 p-4 text-xs text-slate-500"
+            >
+              <div className="h-24 rounded-xl border border-dashed border-slate-700 bg-slate-950/60" />
+              <p className="mt-3">Image {index} of 3</p>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge tone="subtle">{PLACE_TYPES[place.type]}</Badge>
+              <Badge tone="subtle">{place.neighborhood}</Badge>
+            </div>
+            <h2 className="mt-3 text-2xl font-semibold">{place.name}</h2>
+            <p className="mt-2 text-sm text-slate-400">{place.headline}</p>
+          </div>
+          <div className="flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={() => onAddToDraft(place.id)}
+              disabled={inDraft}
+              className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {inDraft ? "Added to itinerary" : "Add to itinerary"}
+            </button>
+            {inDraft && (
+              <button
+                type="button"
+                onClick={() => onRemoveFromDraft(place.id)}
+                className="rounded-full border border-rose-400/40 px-4 py-2 text-sm text-rose-200 hover:border-rose-300"
+              >
+                Remove from itinerary
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onSaveForLater}
+              className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+            >
+              Save for later
+            </button>
+            <p className="text-xs text-slate-500">
+              No reservations or backend calls in prototype mode.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <h3 className="text-lg font-semibold">Why we love it</h3>
+            <p className="mt-3 text-sm text-slate-400">
+              {place.lpNote ?? "LP editorial note coming soon."}
+            </p>
+            <p className="mt-2 text-xs text-slate-500">
+              Lonely Planet editorial note.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <h3 className="text-lg font-semibold">Practicals</h3>
+            <div className="mt-4 grid gap-3 md:grid-cols-3">
+              <InfoTile label="Hours" value={place.hours} />
+              <InfoTile label="Cost" value={place.cost} />
+              <InfoTile label="Booking" value={place.bookingRequired} />
+            </div>
+            <div className="mt-3 grid gap-3 md:grid-cols-2">
+              <InfoTile label="Best time" value={place.bestTime} />
+              <InfoTile label="Energy" value={place.energy} />
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <h3 className="text-lg font-semibold">Tips from community</h3>
+            <ul className="mt-3 space-y-2 text-sm text-slate-400">
+              {place.communityTips.map((tip) => (
+                <li key={tip} className="rounded-xl border border-slate-700 p-3">
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <h3 className="text-lg font-semibold">Highlights to notice</h3>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {place.highlights.map((highlight) => (
+                <Badge key={highlight} tone="subtle">
+                  {highlight}
+                </Badge>
+              ))}
+            </div>
+            <p className="mt-3 text-sm text-slate-500">
+              These highlights are placeholders for quick story hooks.
+            </p>
+          </div>
+        </section>
+
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Good for
+            </p>
+            <p className="mt-3 text-sm text-slate-200">{place.goodFor}</p>
+            <p className="mt-2 text-xs text-slate-500">
+              This copy can adapt by itinerary type.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Nearby picks
+            </p>
+            <div className="mt-3 space-y-2">
+              {similarPlaces.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onOpenPlace(item.id)}
+                  className="flex w-full items-center justify-between rounded-xl border border-slate-700 px-3 py-2 text-left text-sm text-slate-200 hover:border-slate-500"
+                >
+                  <span>{item.name}</span>
+                  <span className="text-xs text-slate-500">
+                    {PLACE_TYPES[item.type]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Itinerary fit
+            </p>
+            <p className="mt-3 text-sm text-slate-400">
+              Add this place after a lighter stop. It resets energy without
+              breaking flow.
+            </p>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function EditorScreen({
+  draftTitle,
+  setDraftTitle,
+  draftDescription,
+  setDraftDescription,
+  draftVisibility,
+  setDraftVisibility,
+  coverImagePresent,
+  setCoverImagePresent,
+  draftVibe,
+  setDraftVibe,
+  draftPlaces,
+  placeMap,
+  groupDraftByDay,
+  setGroupDraftByDay,
+  draftDayGroups,
+  draftPlaceNotes,
+  setDraftPlaceNotes,
+  draftDayNotes,
+  setDraftDayNotes,
+  publishStatus,
+  setPublishStatus,
+  userTrustScore,
+  onMovePlace,
+  onOpenPlace,
+  onRemoveFromDraft,
+  onAddPlace,
+  onBrowsePlaces,
+  onPreviewDraft,
+  onToast,
+}) {
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [showPublishModal, setShowPublishModal] = useState(false);
+  const [publishErrors, setPublishErrors] = useState([]);
+  const vibeConfig = getVibeConfig(draftVibe);
+
+  const placeIndexMap = useMemo(() => {
+    const map = {};
+    draftPlaces.forEach((placeId, index) => {
+      map[placeId] = index;
+    });
+    return map;
+  }, [draftPlaces]);
+
+  const filteredPlaces = useMemo(() => {
+    if (!placeQuery.trim()) return [];
+    const normalized = placeQuery.toLowerCase();
+    return PLACE_CATALOG.filter((place) =>
+      place.name.toLowerCase().includes(normalized)
+    ).slice(0, 6);
+  }, [placeQuery]);
+
+  const categoriesUsed = useMemo(() => {
+    const categories = new Set();
+    draftPlaces.forEach((placeId) => {
+      const type = placeMap[placeId]?.type;
+      if (type) categories.add(type);
+    });
+    return categories;
+  }, [draftPlaces, placeMap]);
+
+  const dayCount = groupDraftByDay ? draftDayGroups.length : 1;
+  const hasEnoughPlacesOrDays =
+    draftPlaces.length >= 6 || dayCount >= 2;
+  const descriptionLength = draftDescription.trim().length;
+  const checklist = [
+    {
+      label: "Cover image present",
+      complete: coverImagePresent,
+    },
+    {
+      label: "Description is at least 40 characters",
+      complete: descriptionLength >= 40,
+    },
+    {
+      label: "At least 6 places total or 2+ days",
+      complete: hasEnoughPlacesOrDays,
+    },
+    {
+      label: "Includes at least 2 categories",
+      complete: categoriesUsed.size >= 2,
+    },
+  ];
+
+  const handlePlaceNoteChange = (placeId, value) =>
+    setDraftPlaceNotes((prev) => ({
+      ...prev,
+      [placeId]: value,
+    }));
+
+  const handleDayNoteChange = (dayIndex, value) =>
+    setDraftDayNotes((prev) => ({
+      ...prev,
+      [dayIndex]: value,
+    }));
+
+  const handlePublish = () => {
+    const errors = [];
+    if (!coverImagePresent) {
+      errors.push(
+        "Add a cover image so travelers can spot your itinerary quickly."
+      );
+    }
+    if (descriptionLength < 40) {
+      errors.push(
+        "Add a bit more detail — a longer description helps set expectations."
+      );
+    }
+    if (!hasEnoughPlacesOrDays) {
+      errors.push(
+        "Add a few more places or split into at least two days for balance."
+      );
+    }
+    if (categoriesUsed.size < 2) {
+      errors.push(
+        "Mix in at least two categories (food + activity, for example)."
+      );
+    }
+
+    if (errors.length > 0) {
+      setPublishErrors(errors);
+      return;
+    }
+
+    setPublishErrors([]);
+    setDraftVisibility("Public");
+    const status =
+      userTrustScore < 30
+        ? "Community — Needs review"
+        : "Community — Published";
+    setPublishStatus(status);
+    setShowPublishModal(false);
+    if (onToast) {
+      onToast(
+        userTrustScore < 30
+          ? "Published and queued for review."
+          : "Published to the community."
+      );
+    }
+  };
+
+  return (
+    <div className="mt-8 space-y-6">
+      <section className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h2 className="text-2xl font-semibold">Itinerary editor</h2>
+            <p className="mt-2 text-sm text-slate-400">
+              Rename, reorder, and publish your community itinerary.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={() => onToast && onToast("Draft saved locally.")}
+              className="rounded-full border border-emerald-400/40 px-4 py-2 text-sm text-emerald-200 hover:border-emerald-300"
+            >
+              Save draft
+            </button>
+            <button
+              type="button"
+              onClick={onPreviewDraft}
+              className="rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300 hover:border-slate-500"
+            >
+              Preview itinerary
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowPublishModal(true)}
+              className="rounded-full border border-indigo-400/40 px-4 py-2 text-sm text-indigo-200 hover:border-indigo-300"
+            >
+              Publish
+            </button>
+          </div>
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span className="rounded-full border border-slate-700 px-3 py-1">
+            Visibility: {draftVisibility}
+          </span>
+          <span className="rounded-full border border-slate-700 px-3 py-1">
+            Status: {publishStatus}
+          </span>
+          <span className="rounded-full border border-slate-700 px-3 py-1">
+            Trust score: {userTrustScore}
+          </span>
+        </div>
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[2fr_1fr]">
+        <div className="space-y-6">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <label className="space-y-2 text-sm text-slate-400">
+              Itinerary title
+              <input
+                value={draftTitle}
+                onChange={(event) => setDraftTitle(event.target.value)}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-base text-slate-100 outline-none focus:border-slate-500"
+              />
+            </label>
+            <label className="mt-4 block space-y-2 text-sm text-slate-400">
+              Description
+              <textarea
+                value={draftDescription}
+                onChange={(event) => setDraftDescription(event.target.value)}
+                rows={4}
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-base text-slate-100 outline-none focus:border-slate-500"
+              />
+            </label>
+            <p className="mt-2 text-xs text-slate-500">
+              {descriptionLength}/40 characters
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Visibility
+            </p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {["Private", "Public"].map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  onClick={() => setDraftVisibility(option)}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${
+                    draftVisibility === option
+                      ? "border-slate-500 bg-slate-800 text-white"
+                      : "border-slate-700 text-slate-300 hover:border-slate-500"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Public itineraries appear in the Community feed after review.
+            </p>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Cover image
+            </p>
+            <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-4">
+              <div className="text-sm text-slate-400">
+                {coverImagePresent
+                  ? "Cover image attached."
+                  : "No cover image yet."}
+              </div>
+              <button
+                type="button"
+                onClick={() => setCoverImagePresent((prev) => !prev)}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+              >
+                {coverImagePresent ? "Remove cover" : "Add cover"}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <aside className="space-y-4">
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Vibe
+            </p>
+            <div className="mt-3">
+              <VibeToggle value={draftVibe} onChange={setDraftVibe} />
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              {vibeConfig.summary} ({vibeConfig.placesPerDay} places/day)
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Add a place
+            </p>
+            <div className="relative mt-3">
+              <input
+                value={placeQuery}
+                onChange={(event) => setPlaceQuery(event.target.value)}
+                placeholder="Search places"
+                className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+              />
+              {placeQuery && (
+                <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-lg">
+                  {filteredPlaces.length === 0 && (
+                    <div className="px-4 py-3 text-xs text-slate-500">
+                      No matching places yet.
+                    </div>
+                  )}
+                  {filteredPlaces.map((place) => (
+                    <button
+                      key={place.id}
+                      type="button"
+                      onClick={() => {
+                        onAddPlace(place.id);
+                        setPlaceQuery("");
+                      }}
+                      className="flex w-full items-center justify-between px-4 py-3 text-left text-sm text-slate-200 hover:bg-slate-900"
+                    >
+                      <span>{place.name}</span>
+                      <span className="text-xs text-slate-500">
+                        {PLACE_TYPES[place.type]}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={onBrowsePlaces}
+              className="mt-3 w-full rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+            >
+              Browse all places
+            </button>
+          </div>
+
+          <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+            <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+              Day grouping
+            </p>
+            <div className="mt-3 space-y-2">
+              <button
+                type="button"
+                onClick={() => setGroupDraftByDay(true)}
+                className="w-full rounded-full border border-amber-400/50 px-4 py-2 text-xs text-amber-100 hover:border-amber-300"
+              >
+                Auto-split into days ({vibeConfig.placesPerDay} places/day)
+              </button>
+              <button
+                type="button"
+                onClick={() => setGroupDraftByDay(false)}
+                className="w-full rounded-full border border-slate-700 px-4 py-2 text-xs text-slate-300 hover:border-slate-500"
+              >
+                Switch to single list
+              </button>
+            </div>
+            <p className="mt-3 text-xs text-slate-500">
+              Reordering works in either view.
+            </p>
+          </div>
+        </aside>
+      </section>
+
+      {draftPlaces.length === 0 ? (
+        <EmptyState
+          title="Your itinerary is empty"
+          description="Add places to start building your day-by-day flow."
+          actionLabel="Browse places"
+          onAction={onBrowsePlaces}
+        />
+      ) : (
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold">Places and notes</h3>
+            <p className="text-xs text-slate-500">
+              Use arrows to reorder. Add notes to guide travelers.
+            </p>
+          </div>
+
+          {groupDraftByDay ? (
+            <div className="space-y-4">
+              {draftDayGroups.map((day, dayIndex) => (
+                <div
+                  key={day.day ?? `day-${dayIndex + 1}`}
+                  className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6"
+                >
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-lg font-semibold">
+                      {day.day ?? `Day ${dayIndex + 1}`}
+                    </h4>
+                    <span className="text-xs text-slate-500">
+                      {day.places.length} places
+                    </span>
+                  </div>
+                  <textarea
+                    value={draftDayNotes[dayIndex] ?? ""}
+                    onChange={(event) =>
+                      handleDayNoteChange(dayIndex, event.target.value)
+                    }
+                    rows={2}
+                    placeholder="Add day notes (pace, timing, tickets)"
+                    className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-sm text-slate-100 outline-none focus:border-slate-500"
+                  />
+                  <div className="mt-4 space-y-3">
+                    {day.places.map((placeId) => {
+                      const place = placeMap[placeId];
+                      const index = placeIndexMap[placeId];
+                      return (
+                        <EditorPlaceRow
+                          key={`${day.day ?? `day-${dayIndex + 1}`}-${placeId}`}
+                          place={place}
+                          index={index}
+                          totalCount={draftPlaces.length}
+                          note={draftPlaceNotes[placeId] ?? ""}
+                          onMoveUp={() => onMovePlace(index, -1)}
+                          onMoveDown={() => onMovePlace(index, 1)}
+                          onRemove={() => onRemoveFromDraft(placeId)}
+                          onNoteChange={(value) =>
+                            handlePlaceNoteChange(placeId, value)
+                          }
+                          onOpen={() => onOpenPlace(placeId)}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+              <div className="space-y-3">
+                {draftPlaces.map((placeId, index) => (
+                  <EditorPlaceRow
+                    key={`draft-${placeId}`}
+                    place={placeMap[placeId]}
+                    index={index}
+                    totalCount={draftPlaces.length}
+                    note={draftPlaceNotes[placeId] ?? ""}
+                    onMoveUp={() => onMovePlace(index, -1)}
+                    onMoveDown={() => onMovePlace(index, 1)}
+                    onRemove={() => onRemoveFromDraft(placeId)}
+                    onNoteChange={(value) =>
+                      handlePlaceNoteChange(placeId, value)
+                    }
+                    onOpen={() => onOpenPlace(placeId)}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      {showPublishModal && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-slate-950/80 px-6">
+          <div className="w-full max-w-lg rounded-3xl border border-slate-700 bg-slate-900 p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-semibold">Ready to publish?</h3>
+                <p className="mt-2 text-sm text-slate-400">
+                  Complete the checklist to share your itinerary.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPublishModal(false)}
+                className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {checklist.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-200"
+                >
+                  <span>{item.label}</span>
+                  <span
+                    className={`text-xs ${
+                      item.complete ? "text-emerald-300" : "text-rose-300"
+                    }`}
+                  >
+                    {item.complete ? "Ready" : "Needs work"}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            {publishErrors.length > 0 && (
+              <div className="mt-4 rounded-2xl border border-rose-500/40 bg-rose-500/10 p-4 text-sm text-rose-100">
+                <p className="font-semibold">Before you publish</p>
+                <ul className="mt-2 list-disc space-y-1 pl-5">
+                  {publishErrors.map((error) => (
+                    <li key={error}>{error}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              <p className="text-xs text-slate-500">
+                New creators may be reviewed before going live.
+              </p>
+              <button
+                type="button"
+                onClick={handlePublish}
+                className="rounded-full border border-indigo-400/40 px-4 py-2 text-sm text-indigo-200 hover:border-indigo-300"
+              >
+                Publish now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ItineraryCard({ itinerary, placeMap, onOpen }) {
+  const placeIds = getPlaceIdsFromItinerary(itinerary);
+  const isCurated = itinerary.type === "curated";
+  const isDraft = itinerary.status === "draft";
+  const isPinned = Boolean(itinerary.pinned && isCurated);
+  const communitySignals = getCommunitySignals(itinerary);
+  const previewPlaces = placeIds.slice(0, 3).map((id) => placeMap[id]?.name);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={`group rounded-2xl border p-5 text-left transition hover:border-slate-500 ${
+        isPinned
+          ? "border-amber-400/50 bg-amber-500/10"
+          : "border-slate-800 bg-slate-900/40"
+      }`}
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isPinned && <Badge tone="pinned">Pinned</Badge>}
+          <Badge tone={isDraft ? "draft" : isCurated ? "curated" : "community"}>
+            {isDraft
+              ? "Community draft"
+              : isCurated
+              ? "Lonely Planet curated"
+              : "Community itinerary"}
+          </Badge>
+        </div>
+        <span className="text-xs text-slate-500">{placeIds.length} places</span>
+      </div>
+      <h4 className="mt-3 text-lg font-semibold group-hover:text-white">
+        {itinerary.title}
+      </h4>
+      <p className="mt-2 text-sm text-slate-400">{itinerary.summary}</p>
+      {!isCurated && !isDraft && (
+        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+          <span>Trust {communitySignals.trustScore.toFixed(1)}/5</span>
+          <span className="text-slate-600">•</span>
+          <span>{communitySignals.tripCount} trips</span>
+          {communitySignals.verified && <Badge tone="verified">Verified</Badge>}
+        </div>
+      )}
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(itinerary.tags ?? []).map((tag) => (
+          <Badge key={tag} tone="subtle">
+            {tag}
+          </Badge>
+        ))}
+      </div>
+      <p className="mt-4 text-xs text-slate-500">
+        {previewPlaces.length > 0
+          ? `Starts with ${previewPlaces.join(", ")}.`
+          : "Add places to preview this itinerary."}
+      </p>
+    </button>
+  );
+}
+
+function PlaceMiniCard({ place, onOpen, onAdd }) {
+  return (
+    <div className="rounded-2xl border border-slate-800 bg-slate-950/60 p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="subtle">{PLACE_TYPES[place.type]}</Badge>
+            <PlaceSourceChip place={place} />
+          </div>
+          <h4 className="mt-2 text-base font-semibold">{place.name}</h4>
+          <p className="mt-1 text-xs text-slate-500">{place.neighborhood}</p>
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          className="rounded-full border border-emerald-400/40 px-3 py-1 text-xs text-emerald-200 hover:border-emerald-300"
+        >
+          Add
+        </button>
+      </div>
+      <p className="mt-3 text-xs text-slate-400">{place.headline}</p>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-3 text-xs text-slate-300 underline-offset-4 hover:underline"
+      >
+        View details
+      </button>
+    </div>
+  );
+}
+
+function PlaceSourceChip({ place }) {
+  const isLP = place?.source === "lp";
+  return (
+    <Badge tone={isLP ? "lp" : "communityPick"}>
+      {isLP ? "LP pick" : "Added by community"}
+    </Badge>
+  );
+}
+
+function PlaceRow({ place, index, onOpen }) {
+  if (!place) return null;
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="flex w-full items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3 text-left text-sm text-slate-200 hover:border-slate-500"
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 text-xs text-slate-400">
+          {index}
+        </div>
+        <div>
+          <div className="font-semibold">{place.name}</div>
+          <div className="text-xs text-slate-500">
+            {PLACE_TYPES[place.type]} - {place.duration}
+          </div>
+          <div className="mt-1">
+            <PlaceSourceChip place={place} />
+          </div>
+        </div>
+      </div>
+      <span className="text-xs text-slate-500">{place.neighborhood}</span>
+    </button>
+  );
+}
+
+function TimelinePlaceCard({ place, order, timeBlock, onOpen }) {
+  if (!place) return null;
+  const description = place.headline ?? place.description ?? "";
+  return (
+    <div className="flex flex-wrap gap-4">
+      <div className="min-w-[90px] text-xs text-slate-400">
+        <div className="text-sm font-semibold text-slate-200">{timeBlock}</div>
+        <div className="mt-1 text-slate-500">{place.duration}</div>
+      </div>
+      <div className="flex-1 rounded-2xl border border-slate-700 bg-slate-950/40 p-4">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <span className="flex h-7 w-7 items-center justify-center rounded-full border border-slate-700 text-[10px] font-semibold text-slate-300">
+                {PLACE_ICONS[place.type] ?? "P"}
+              </span>
+              <span>{PLACE_TYPES[place.type]}</span>
+              <span className="text-slate-600">•</span>
+              <span>Stop {order}</span>
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-slate-100">
+                {place.name}
+              </div>
+              <p className="mt-1 text-xs text-slate-400">{description}</p>
+              <div className="mt-2">
+                <PlaceSourceChip place={place} />
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onOpen}
+            className="rounded-full border border-slate-700 px-3 py-1 text-xs text-slate-300 hover:border-slate-500"
+          >
+            View
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DraftRow({ place, index, onOpen, onRemove }) {
+  if (!place) return null;
+  return (
+    <div className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-950/40 px-4 py-3 text-sm text-slate-200">
+      <button type="button" onClick={onOpen} className="text-left">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 text-xs text-slate-400">
+            {index}
+          </div>
+          <div>
+            <div className="font-semibold">{place.name}</div>
+            <div className="text-xs text-slate-500">
+              {PLACE_TYPES[place.type]} - {place.duration}
+            </div>
+          </div>
+        </div>
+      </button>
+      <button
+        type="button"
+        onClick={onRemove}
+        className="rounded-full border border-rose-400/40 px-3 py-1 text-xs text-rose-200 hover:border-rose-300"
+      >
+        Remove
+      </button>
+    </div>
+  );
+}
+
+function EditorPlaceRow({
+  place,
+  index,
+  totalCount,
+  note,
+  onMoveUp,
+  onMoveDown,
+  onRemove,
+  onNoteChange,
+  onOpen,
+}) {
+  if (!place) return null;
+  const canMoveUp = index > 0;
+  const canMoveDown = index < totalCount - 1;
+
+  return (
+    <div className="rounded-2xl border border-slate-700 bg-slate-950/40 p-4 text-sm text-slate-200">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-3">
+          <div className="mt-1 text-slate-500">≡</div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 text-xs text-slate-400">
+            {index + 1}
+          </div>
+          <div>
+            <button
+              type="button"
+              onClick={onOpen}
+              className="text-left text-sm font-semibold text-slate-100 hover:underline"
+            >
+              {place.name}
+            </button>
+            <div className="text-xs text-slate-500">
+              {PLACE_TYPES[place.type]} • {place.duration}
+            </div>
+            <div className="mt-2">
+              <PlaceSourceChip place={place} />
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <button
+            type="button"
+            onClick={onMoveUp}
+            disabled={!canMoveUp}
+            className="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Up
+          </button>
+          <button
+            type="button"
+            onClick={onMoveDown}
+            disabled={!canMoveDown}
+            className="rounded-full border border-slate-700 px-3 py-1 text-slate-300 hover:border-slate-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Down
+          </button>
+          <button
+            type="button"
+            onClick={onRemove}
+            className="rounded-full border border-rose-400/40 px-3 py-1 text-rose-200 hover:border-rose-300"
+          >
+            Remove
+          </button>
+        </div>
+      </div>
+      <textarea
+        value={note}
+        onChange={(event) => onNoteChange(event.target.value)}
+        rows={2}
+        placeholder="Add a note for this stop"
+        className="mt-3 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2 text-xs text-slate-100 outline-none focus:border-slate-500"
+      />
+    </div>
+  );
+}
+
+function Badge({ tone = "default", children }) {
+  const tones = {
+    default: "border-slate-700 text-slate-200 bg-slate-900/60",
+    subtle: "border-slate-700 text-slate-400 bg-slate-950/60",
+    curated: "border-amber-400/40 text-amber-200 bg-amber-500/10",
+    community: "border-emerald-400/40 text-emerald-200 bg-emerald-500/10",
+    draft: "border-sky-400/40 text-sky-200 bg-sky-500/10",
+    pinned: "border-amber-300/60 text-amber-100 bg-amber-500/20",
+    verified: "border-emerald-300/60 text-emerald-100 bg-emerald-500/20",
+    lp: "border-amber-300/60 text-amber-100 bg-amber-500/15",
+    communityPick: "border-indigo-300/60 text-indigo-100 bg-indigo-500/15",
+  };
+  return (
+    <span
+      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${
+        tones[tone] ?? tones.default
+      }`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function InfoTile({ label, value }) {
+  return (
+    <div className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3">
+      <div className="text-xs uppercase tracking-[0.2em] text-slate-500">
+        {label}
+      </div>
+      <div className="mt-2 text-sm text-slate-200">{value}</div>
+    </div>
+  );
+}
+
+function ActionRow({ title, description }) {
+  return (
+    <div className="rounded-xl border border-slate-700 bg-slate-950/60 px-4 py-3 text-sm text-slate-200">
+      <div className="font-semibold">{title}</div>
+      <div className="mt-1 text-xs text-slate-500">{description}</div>
+    </div>
+  );
+}
+
+function EmptyState({ title, description, actionLabel, onAction }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-slate-700 bg-slate-950/60 p-8 text-center">
+      <h3 className="text-lg font-semibold">{title}</h3>
+      <p className="mt-2 text-sm text-slate-400">{description}</p>
+      {actionLabel && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-4 rounded-full border border-slate-600 px-4 py-2 text-sm text-slate-200 hover:border-slate-500"
+        >
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ErrorState({ title, description, actionLabel, onAction }) {
+  return (
+    <div className="rounded-2xl border border-rose-500/40 bg-rose-500/10 p-8 text-center">
+      <h3 className="text-lg font-semibold text-rose-100">{title}</h3>
+      <p className="mt-2 text-sm text-rose-100/70">{description}</p>
+      {actionLabel && (
+        <button
+          type="button"
+          onClick={onAction}
+          className="mt-4 rounded-full border border-rose-400/60 px-4 py-2 text-sm text-rose-100 hover:border-rose-300"
+        >
+          {actionLabel}
+        </button>
+      )}
+    </div>
+  );
+}
+
+function SkeletonCard() {
+  return (
+    <div className="animate-pulse rounded-2xl border border-slate-800 bg-slate-900/40 p-5">
+      <div className="h-4 w-32 rounded bg-slate-700/60" />
+      <div className="mt-4 h-5 w-2/3 rounded bg-slate-700/60" />
+      <div className="mt-2 h-4 w-full rounded bg-slate-800/60" />
+      <div className="mt-2 h-4 w-5/6 rounded bg-slate-800/60" />
+      <div className="mt-4 h-4 w-1/2 rounded bg-slate-700/60" />
+    </div>
+  );
+}
+
+function SkeletonPanel() {
+  return (
+    <div className="animate-pulse space-y-4">
+      <div className="h-28 rounded-2xl border border-slate-800 bg-slate-900/40" />
+      <div className="h-56 rounded-2xl border border-slate-800 bg-slate-900/40" />
+    </div>
+  );
+}
